@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class EnsureBearerRole
 {
-    /**
-     * Handle an incoming request.
-     */
+   
     public function handle(Request $request, Closure $next, string ...$roles)
     {
         $token = $request->bearerToken();
@@ -39,7 +37,7 @@ class EnsureBearerRole
         }
 
         Auth::setUser($user);
-        $request->setUserResolver(fn () => $user);
+        $request->setUserResolver(fn() => $user);
 
         return $next($request);
     }
