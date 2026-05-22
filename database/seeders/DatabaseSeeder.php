@@ -19,6 +19,7 @@ use App\Models\TreatmentPlan;
 use App\Models\TreatmentSession;
 use App\Models\TreatmentStage;
 use App\Models\User;
+use App\Models\MedicalRecord;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -86,6 +87,19 @@ class DatabaseSeeder extends Seeder
             'doctor_id' => $doctor->doctor_id,
             'session_id' => $session->session_id,
             'tooth_id' => $tooth->tooth_id,
+        ]);
+
+        // ensure a medical record exists for the patient
+        $medicalRecord = MedicalRecord::factory()->create([
+            'patient_id' => $patient->patient_id,
+        ]);
+
+        // seed a diagnosis linked to the record/session
+        \App\Models\Diagnosis::factory()->create([
+            'record_id' => $medicalRecord->record_id,
+            'patient_id' => $patient->patient_id,
+            'doctor_id' => $doctor->doctor_id,
+            'session_id' => $session->session_id,
         ]);
     }
 }

@@ -25,4 +25,9 @@ class MedicalRecord extends ClinicModel
     {
         return $this->hasMany(Allergy::class, 'record_id', 'record_id');
     }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class, 'record_id', 'record_id');
+    }
 }

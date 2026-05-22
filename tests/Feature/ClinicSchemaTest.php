@@ -22,6 +22,7 @@ use App\Models\TreatmentPlan;
 use App\Models\TreatmentSession;
 use App\Models\TreatmentStage;
 use App\Models\User;
+use App\Models\Diagnosis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -136,6 +137,7 @@ class ClinicSchemaTest extends TestCase
             'doctor_id' => $doctor->doctor_id,
             'patient_id' => $patient->patient_id,
             'session_date' => '2026-05-16',
+            'estimated_cost' => 800.00,
             'notes' => 'Treatment session one',
         ]);
 
@@ -170,6 +172,17 @@ class ClinicSchemaTest extends TestCase
             'previous_condition' => 'Cavity',
             'new_condition' => 'Filled',
             'cost' => 250.00,
+        ]);
+
+        $diagnosis = Diagnosis::create([
+            'record_id' => $medicalRecord->record_id,
+            'patient_id' => $patient->patient_id,
+            'doctor_id' => $doctor->doctor_id,
+            'session_id' => $treatmentSession->session_id,
+            'diagnosis_name' => 'Tooth Decay',
+            'description' => 'Moderate decay in upper incisor',
+            'severity' => 'Medium',
+            'diagnosed_at' => now(),
         ]);
 
         $payment = Payment::create([
@@ -231,8 +244,12 @@ class ClinicSchemaTest extends TestCase
 
         $this->assertSame('Stage 1', $treatmentPlan->stages->first()->stage_name);
         $this->assertSame('Treatment session one', $treatmentSession->notes);
+        $this->assertSame(800.00, $treatmentSession->estimated_cost);
         $this->assertSame('Filled', $treatmentDetails->new_condition);
         $this->assertSame('Damaged', $toothCondition->condition_status);
+
+        $this->assertSame('Tooth Decay', $diagnosis->diagnosis_name);
+        $this->assertSame('Paul', $diagnosis->patient->user->first_name);
 
         $this->assertSame(250.00, $payment->amount);
         $this->assertSame('Pending', $doctorPayout->status);

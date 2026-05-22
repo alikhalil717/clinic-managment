@@ -47,4 +47,9 @@ class Doctor extends ClinicModel
     {
         return $this->hasMany(Rating::class, 'doctor_id', 'doctor_id');
     }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class, 'doctor_id', 'doctor_id');
+    }
 }

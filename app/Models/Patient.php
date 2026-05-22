@@ -57,4 +57,9 @@ class Patient extends ClinicModel
     {
         return $this->hasMany(PatientPoints::class, 'patient_id', 'patient_id');
     }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class, 'patient_id', 'patient_id');
+    }
 }

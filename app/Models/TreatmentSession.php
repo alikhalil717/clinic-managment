@@ -45,4 +45,9 @@ class TreatmentSession extends ClinicModel
     {
         return $this->hasMany(DoctorPayout::class, 'session_id', 'session_id');
     }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class, 'session_id', 'session_id');
+    }
 }

@@ -22,6 +22,7 @@ class TreatmentSessionFactory extends Factory
             'doctor_id' => Doctor::factory(),
             'patient_id' => Patient::factory(),
             'session_date' => fake()->date(),
+            'estimated_cost' => fake()->randomFloat(2, 50, 2500),
             'notes' => fake()->sentence(),
         ];
     }
