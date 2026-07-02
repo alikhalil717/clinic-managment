@@ -7,18 +7,20 @@ services:
     volumes:
       - ./:/var/www/html
     ports:
-      - "8000:8000"
+      - "${APP_PORT:-8000}:8000"
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
-      APP_URL: http://localhost:8000
+      APP_URL: http://localhost:${APP_PORT:-8000}
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: clinic
       DB_USERNAME: clinic
       DB_PASSWORD: clinic
-      VITE_DEV_SERVER_URL: http://localhost:5173
+      VITE_DEV_SERVER_URL: http://localhost:${VITE_PORT:-5173}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
@@ -29,8 +31,10 @@ services:
     volumes:
       - ./:/var/www/html
     ports:
-      - "5173:5173"
+      - "${VITE_PORT:-5173}:5173"
     command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: mysql:8.0
@@ -41,7 +45,7 @@ services:
       MYSQL_PASSWORD: clinic
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "${DB_PORT_HOST:-3306}:3306"
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
