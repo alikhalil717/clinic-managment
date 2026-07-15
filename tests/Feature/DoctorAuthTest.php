@@ -97,4 +97,84 @@ class DoctorAuthTest extends TestCase
             'api_token' => null,
         ]);
     }
+
+    public function test_doctor_can_get_profile_with_bearer_token(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'Doctor',
+        ]);
+
+        Doctor::create([
+            'doctor_id' => $user->user_id,
+            'specialization' => 'Orthodontics',
+            'license_number' => 'LIC-10004',
+            'years_of_experience' => 8,
+            'rating' => 4.2,
+            'reviews_count' => 10,
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->api_token)
+            ->getJson('/api/doctor/profile');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['success', 'data' => ['user', 'doctor_id', 'specialization']]);
+    }
+
+    public function test_doctor_can_update_profile(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'Doctor',
+            'first_name' => 'OldDoc',
+        ]);
+
+        Doctor::create([
+            'doctor_id' => $user->user_id,
+            'specialization' => 'Orthodontics',
+            'license_number' => 'LIC-10005',
+            'years_of_experience' => 8,
+            'rating' => 4.2,
+            'reviews_count' => 10,
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->api_token)
+            ->postJson('/api/doctor/update-profile', [
+                'first_name' => 'NewDoc',
+                'specialization' => 'Endodontics',
+                'years_of_experience' => 15,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Profile updated successfully.');
+
+        $this->assertDatabaseHas('users', [
+            'user_id' => $user->user_id,
+            'first_name' => 'NewDoc',
+        ]);
+
+        $this->assertDatabaseHas('doctor', [
+            'doctor_id' => $user->user_id,
+            'specialization' => 'Endodontics',
+            'years_of_experience' => 15,
+        ]);
+    }
+
+    public function test_doctor_update_profile_requires_auth(): void
+    {
+        $response = $this->postJson('/api/doctor/update-profile', [
+            'first_name' => 'Hacker',
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    public function test_doctor_profile_requires_auth(): void
+    {
+        $response = $this->getJson('/api/doctor/profile');
+
+        $response->assertUnauthorized();
+    }
 }

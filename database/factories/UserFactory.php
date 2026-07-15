@@ -32,8 +32,8 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'Patient',
             'api_token' => Str::random(60),
+            'profile_image' => null,
             'created_at' => now(),
         ];
     }
-
 }

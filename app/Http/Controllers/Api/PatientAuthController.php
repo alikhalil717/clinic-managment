@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PatientLoginRequest;
 use App\Http\Requests\PatientRegisterRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Services\PatientAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,5 +27,15 @@ class PatientAuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         return $this->patientAuthService->logout($request);
+    }
+
+    public function profile(Request $request): JsonResponse
+    {
+        return $this->patientAuthService->profile($request);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        return $this->patientAuthService->updateProfile($request);
     }
 }
