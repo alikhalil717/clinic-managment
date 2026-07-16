@@ -51,9 +51,18 @@ class DatabaseSeeder extends Seeder
 
         $tooth = Tooth::factory()->create();
 
-        TreatmentPlan::factory()->create([
+        // Create a treatment plan with title/description and associated cases
+        $plan = TreatmentPlan::factory()->create([
             'doctor_id' => $doctor->doctor_id,
             'patient_id' => $patient->patient_id,
+        ]);
+
+        // Create 2 cases for the plan: one in-progress, one done
+        \App\Models\CaseModel::factory()->create([
+            'treatment_plan_id' => $plan->plan_id,
+        ]);
+        \App\Models\CaseModel::factory()->done()->create([
+            'treatment_plan_id' => $plan->plan_id,
         ]);
 
         TreatmentStage::factory()->create();

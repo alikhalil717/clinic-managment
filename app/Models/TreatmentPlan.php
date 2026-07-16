@@ -25,4 +25,9 @@ class TreatmentPlan extends ClinicModel
     {
         return $this->hasMany(TreatmentStage::class, 'plan_id', 'plan_id');
     }
+
+    public function cases(): HasMany
+    {
+        return $this->hasMany(CaseModel::class, 'treatment_plan_id', 'plan_id');
+    }
 }

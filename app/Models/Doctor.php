@@ -13,6 +13,15 @@ class Doctor extends ClinicModel
 
     public $incrementing = false;
 
+    protected function casts(): array
+    {
+        return [
+            'education' => 'array',
+            'certifications' => 'array',
+            'expertise' => 'array',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'doctor_id', 'user_id');

@@ -10,6 +10,16 @@ class TreatmentDetails extends ClinicModel
 
     protected $primaryKey = 'detail_id';
 
+    protected $fillable = [
+        'session_id',
+        'tooth_id',
+        'previous_condition',
+        'new_condition',
+        'cost',
+        'before_photo',
+        'after_photo',
+    ];
+
     public function session(): BelongsTo
     {
         return $this->belongsTo(TreatmentSession::class, 'session_id', 'session_id');

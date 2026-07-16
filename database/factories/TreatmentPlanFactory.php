@@ -19,6 +19,8 @@ class TreatmentPlanFactory extends Factory
         return [
             'patient_id' => Patient::factory(),
             'doctor_id' => Doctor::factory(),
+            'title' => fake()->sentence(3),
+            'description' => fake()->paragraph(),
             'estimated_total_cost' => fake()->randomFloat(2, 100, 5000),
             'actual_total_cost' => fake()->randomFloat(2, 100, 5000),
             'progress_percentage' => fake()->numberBetween(0, 100),

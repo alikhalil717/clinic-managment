@@ -24,6 +24,18 @@ class DoctorFactory extends Factory
             'years_of_experience' => fake()->numberBetween(1, 30),
             'rating' => fake()->randomFloat(2, 1, 5),
             'reviews_count' => fake()->numberBetween(0, 500),
+            'about' => fake()->paragraph(),
+            'education' => [
+                fake()->randomElement(['BDS', 'DDS', 'DMD']) . ' - ' . fake()->city() . ' University',
+            ],
+            'certifications' => [
+                'Board Certified ' . fake()->randomElement(['Orthodontist', 'Endodontist', 'Pediatric Dentist']),
+                fake()->randomElement(['Invisalign', 'ClearCorrect']) . '® Certified Provider',
+            ],
+            'expertise' => fake()->randomElements(
+                ['Orthodontics', 'Clear Aligners', 'Braces', 'Smile Design', 'Teeth Whitening', 'Cosmetic Dentistry', 'Endodontics', 'Pediatric Dentistry'],
+                fake()->numberBetween(3, 6)
+            ),
         ];
     }
 }

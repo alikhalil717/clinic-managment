@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\CaseController;
 use App\Http\Controllers\Api\DoctorAuthController;
+use App\Http\Controllers\Api\DoctorProfileController;
 use App\Http\Controllers\Api\PatientAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -12,7 +14,9 @@ Route::middleware('patient.bearer:Patient')->get('/patient/me', function (Reques
 Route::middleware('doctor.bearer:Doctor')->get('/doctor/me', function (Request $request) {
     return response()->json($request->user());
 });
+//!Authentication Routes
 
+//!patient
 Route::prefix('patient')->group(function (): void {
     Route::post('/register', [PatientAuthController::class, 'register']);
     Route::post('/login', [PatientAuthController::class, 'login']);
@@ -22,8 +26,10 @@ Route::prefix('patient')->group(function (): void {
         ->middleware('patient.bearer:Patient');
     Route::post('/update-profile', [PatientAuthController::class, 'updateProfile'])
         ->middleware('patient.bearer:Patient');
+    Route::get('/doctors/{doctor}', [DoctorProfileController::class, 'show'])
+        ->middleware('patient.bearer:Patient');
 });
-
+//!Doctor
 Route::prefix('doctor')->group(function (): void {
     Route::post('/register', [DoctorAuthController::class, 'register']);
     Route::post('/login', [DoctorAuthController::class, 'login']);
@@ -32,5 +38,7 @@ Route::prefix('doctor')->group(function (): void {
     Route::get('/profile', [DoctorAuthController::class, 'profile'])
         ->middleware('doctor.bearer:Doctor');
     Route::post('/update-profile', [DoctorAuthController::class, 'updateProfile'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::post('/cases/{case}/finish', [CaseController::class, 'finish'])
         ->middleware('doctor.bearer:Doctor');
 });

@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('treatment_details', function (Blueprint $table) {
+            $table->string('before_photo')->nullable()->after('cost');
+            $table->string('after_photo')->nullable()->after('before_photo');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('treatment_details', function (Blueprint $table) {
+            $table->dropColumn(['before_photo', 'after_photo']);
+        });
+    }
+};
