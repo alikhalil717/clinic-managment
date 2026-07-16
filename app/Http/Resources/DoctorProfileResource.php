@@ -28,6 +28,18 @@ class DoctorProfileResource extends JsonResource
             'expertise' => $this->expertise,
             'cases' => $this->whenLoaded('treatmentPlans', function () {
                 return $this->treatmentPlans->map(function ($plan) {
+                    $caseData = null;
+                    if ($plan->relationLoaded('case') && $plan->case) {
+                        $caseData = [
+                            'case_id' => $plan->case->case_id,
+                            'title' => $plan->case->title,
+                            'patient_age' => $plan->case->patient_age,
+                            'before_photo' => $plan->case->before_photo,
+                            'after_photo' => $plan->case->after_photo,
+                            'case_duration' => $plan->case->case_duration,
+                        ];
+                    }
+
                     return [
                         'plan_id' => $plan->plan_id,
                         'title' => $plan->title,
@@ -36,14 +48,7 @@ class DoctorProfileResource extends JsonResource
                         'actual_total_cost' => $plan->actual_total_cost,
                         'progress_percentage' => $plan->progress_percentage,
                         'created_at' => $plan->created_at,
-                        'cases' => $plan->cases->map(function ($case) {
-                            return [
-                                'case_id' => $case->case_id,
-                                'before_photo' => $case->before_photo,
-                                'after_photo' => $case->after_photo,
-                                'status' => $case->status,
-                            ];
-                        }),
+                        'case' => $caseData,
                     ];
                 });
             }),

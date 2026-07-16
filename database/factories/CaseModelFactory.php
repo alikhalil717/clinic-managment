@@ -17,18 +17,19 @@ class CaseModelFactory extends Factory
     {
         return [
             'treatment_plan_id' => TreatmentPlan::factory(),
+            'title' => fake()->sentence(3),
+            'patient_age' => fake()->numberBetween(5, 80),
             'before_photo' => 'cases/before/' . fake()->uuid() . '.jpg',
             'after_photo' => null,
-            'status' => 'in-progress',
             'created_at' => now(),
         ];
     }
 
     public function done(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'after_photo' => 'cases/after/' . fake()->uuid() . '.jpg',
-            'status' => 'done',
+            'created_at' => now(), // updated when finished
         ]);
     }
 }

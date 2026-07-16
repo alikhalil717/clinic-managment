@@ -11,7 +11,7 @@ class DoctorProfileController extends Controller
 {
     public function show(int $doctorId): JsonResponse
     {
-        $doctor = Doctor::with(['user', 'treatmentPlans.cases'])
+        $doctor = Doctor::with(['user', 'treatmentPlans.case'])
             ->findOrFail($doctorId);
 
         return response()->json([

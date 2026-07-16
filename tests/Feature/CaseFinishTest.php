@@ -52,20 +52,15 @@ class CaseFinishTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('message', 'Case marked as done.')
-            ->assertJsonPath('case.status', 'done')
             ->assertJsonPath('case.case_id', $this->case->case_id);
 
         $this->assertNotNull($response->json('case.after_photo'));
+        $this->assertNotNull($response->json('case.case_duration'));
 
         // Verify database was updated
-        $this->assertDatabaseHas('cases', [
-            'case_id' => $this->case->case_id,
-            'status' => 'done',
-        ]);
-
         $updatedCase = CaseModel::find($this->case->case_id);
         $this->assertNotNull($updatedCase->after_photo);
-        $this->assertEquals('done', $updatedCase->status);
+        $this->assertNotNull($updatedCase->case_duration);
     }
 
     public function test_finish_case_requires_after_photo(): void

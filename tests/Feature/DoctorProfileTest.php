@@ -43,13 +43,12 @@ class DoctorProfileTest extends TestCase
 
     public function test_patient_can_view_doctor_public_profile(): void
     {
-        // Create a treatment plan with cases
+        // Create a treatment plan with a single case (1-to-1)
         $plan = TreatmentPlan::factory()->create([
             'doctor_id' => $this->doctor->doctor_id,
             'patient_id' => $this->patientUser->user_id,
         ]);
 
-        CaseModel::factory()->create(['treatment_plan_id' => $plan->plan_id]);
         CaseModel::factory()->done()->create(['treatment_plan_id' => $plan->plan_id]);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->patientUser->api_token)
@@ -75,13 +74,13 @@ class DoctorProfileTest extends TestCase
                             'plan_id',
                             'title',
                             'description',
-                            'cases' => [
-                                '*' => [
-                                    'case_id',
-                                    'before_photo',
-                                    'after_photo',
-                                    'status',
-                                ],
+                            'case' => [
+                                'case_id',
+                                'title',
+                                'patient_age',
+                                'before_photo',
+                                'after_photo',
+                                'case_duration',
                             ],
                         ],
                     ],
@@ -96,13 +95,15 @@ class DoctorProfileTest extends TestCase
         $this->assertIsArray($response->json('data.certifications'));
         $this->assertIsArray($response->json('data.expertise'));
 
-        // Verify cases
+        // Verify cases — 1:1
         $cases = $response->json('data.cases');
         $this->assertCount(1, $cases);
-        $this->assertCount(2, $cases[0]['cases']);
-        $this->assertEquals('in-progress', $cases[0]['cases'][0]['status']);
-        $this->assertEquals('done', $cases[0]['cases'][1]['status']);
-        $this->assertNotNull($cases[0]['cases'][1]['after_photo']);
+        $case = $cases[0]['case'];
+        $this->assertNotNull($case);
+        $this->assertNotNull($case['case_id']);
+        $this->assertNotNull($case['before_photo']);
+        $this->assertNotNull($case['after_photo']);
+        $this->assertNotNull($case['case_duration']);
     }
 
     public function test_patient_cannot_view_doctor_profile_without_auth(): void
