@@ -5,6 +5,14 @@ use App\Http\Controllers\Api\DoctorAuthController;
 use App\Http\Controllers\Api\DoctorProfileController;
 use App\Http\Controllers\Api\PatientAuthController;
 use App\Http\Controllers\Api\PatientDashboardController;
+use App\Http\Controllers\Api\SecretaryAuthController;
+
+use App\Http\Controllers\Api\AdminAuthController;
+use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminDoctorController;
+use App\Http\Controllers\Api\AdminPatientController;
+use App\Http\Controllers\Api\AdminAppointmentController;
+use App\Http\Controllers\Api\AdminTreatmentPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +23,7 @@ Route::middleware('patient.bearer:Patient')->get('/patient/me', function (Reques
 Route::middleware('doctor.bearer:Doctor')->get('/doctor/me', function (Request $request) {
     return response()->json($request->user());
 });
-//!Authentication Routes
+//!Authentication Routes  ---------------------------------------------------
 
 //! Patient
 Route::prefix('patient')->group(function (): void {
@@ -52,5 +60,101 @@ Route::prefix('doctor')->group(function (): void {
         ->middleware('doctor.bearer:Doctor');
 });
 
+//! Admin Auth
+Route::prefix('admin')->group(function (): void {
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/logout', [AdminAuthController::class, 'logout'])
+        ->middleware('admin.bearer:Admin');
+    Route::get('/profile', [AdminAuthController::class, 'profile'])
+        ->middleware('admin.bearer:Admin');
+    Route::post('/update-profile', [AdminAuthController::class, 'updateProfile'])
+        ->middleware('admin.bearer:Admin');
+});
+//! seceretary Auth
+Route::prefix('secretary')->group(function (): void {
+    Route::post('/login', [SecretaryAuthController::class, 'login']);
+    Route::post('/logout', [SecretaryAuthController::class, 'logout'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/profile', [SecretaryAuthController::class, 'profile'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::post('/update-profile', [SecretaryAuthController::class, 'updateProfile'])
+        ->middleware('secretary.bearer:Secretary');
+});
+//! Admin manage dashboard
+//TODO:  make the controller for admin dashboard with Request and  service and resource
+Route::prefix('admin')->group(function (): void {
+    Route::get('/dashboard', [AdminDashboardController::class, 'dashboard'])
+        ->middleware('admin.bearer:Admin');
+
+    //! Admin manage doctors
+    Route::get('/doctors', [AdminDoctorController::class, 'index'])
+        ->middleware('admin.bearer:Admin');
+    Route::post('/doctors', [AdminDoctorController::class, 'store'])
+        ->middleware('admin.bearer:Admin');
+    Route::get('/doctors/{doctor}', [AdminDoctorController::class, 'show'])
+        ->middleware('admin.bearer:Admin');
+    Route::put('/doctors/{doctor}', [AdminDoctorController::class, 'update'])
+        ->middleware('admin.bearer:Admin');
+    Route::delete('/doctors/{doctor}', [AdminDoctorController::class, 'destroy'])
+        ->middleware('admin.bearer:Admin');
+    //! Admin manage patients
+    Route::get('/patients', [AdminPatientController::class, 'index'])
+        ->middleware('admin.bearer:Admin');
+    Route::post('/patients', [AdminPatientController::class, 'store'])
+        ->middleware('admin.bearer:Admin');
+    Route::get('/patients/{patient}', [AdminPatientController::class, 'show'])
+        ->middleware('admin.bearer:Admin');
+    Route::put('/patients/{patient}', [AdminPatientController::class, 'update'])
+        ->middleware('admin.bearer:Admin');
+    Route::delete('/patients/{patient}', [AdminPatientController::class, 'destroy'])
+        ->middleware('admin.bearer:Admin');
+    //! Admin manage appointments (Read only)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index'])
+        ->middleware('admin.bearer:Admin');
+    Route::get('/appointments/{appointment}', [AdminAppointmentController::class, 'show'])
+        ->middleware('admin.bearer:Admin');
+    //! Admin manage treatment plans(Read only)
+    Route::get('/treatment-plans', [AdminTreatmentPlanController::class, 'index'])
+        ->middleware('admin.bearer:Admin');
+    Route::get('/treatment-plans/{treatmentPlan}', [AdminTreatmentPlanController::class, 'show'])
+        ->middleware('admin.bearer:Admin');
+});
+
+
+
 //! Dashboard & Doctors
 Route::get('/doctors', [PatientDashboardController::class, 'allDoctors']);
+
+//! patient appointments
+//TODO:  make the controller for patient appointments with Request and  service and resource
+Route::prefix('patient/appointments')->group(function (): void {
+
+    Route::post('/add', [PatientAppointmentController::class, 'addAppointment'])
+        ->middleware('patient.bearer:Patient');
+    Route::post('/{appointment}/cancel', [PatientAppointmentController::class, 'cancelAppointment'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/{appointment}', [PatientAppointmentController::class, 'showAppointmentDetails'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/', [PatientAppointmentController::class, 'showAllAppointments'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/upcoming', [PatientDashboardController::class, 'upcomingAppointments'])
+        ->middleware('patient.bearer:Patient');
+});
+//! patient Tretment plan
+//!TODO:  make the controller for patient treatment plan with Request and  service and resource
+Route::prefix('patient/treatment-plan')->group(function (): void {
+    Route::get('/', [PatientTreatmentPlanController::class, 'showTreatmentPlans'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/{treatmentPlan}', [PatientTreatmentPlanController::class, 'showTreatmentPlanDetails'])
+        ->middleware('patient.bearer:Patient');
+});
+//! doctor appointments
+//!TODO:  make the controller for doctor appointments with Request and  service and resource
+Route::prefix('doctor/appointments')->group(function (): void {
+    Route::get('/', [DoctorAppointmentController::class, 'showDoctorAppointments'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::get('/upcoming', [DoctorAppointmentController::class, 'showDoctorUpcomingAppointments'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::get('/{appointment}', [DoctorAppointmentController::class, 'showDoctorAppointmentDetails'])
+        ->middleware('doctor.bearer:Doctor');
+});
