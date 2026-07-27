@@ -8,6 +8,17 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Force Docker service hostnames (bypass Windows Docker Desktop DNS issues)
+sed -i 's/^DB_HOST=.*/DB_HOST=db/' .env
+export DB_HOST=db
+
+# Also ensure other Docker service env vars are set
+export DB_CONNECTION=mysql
+export DB_PORT=3306
+export DB_DATABASE=clinic
+export DB_USERNAME=clinic
+export DB_PASSWORD=clinic
+
 if [ ! -f vendor/autoload.php ]; then
     composer install --no-interaction --prefer-dist
 fi
