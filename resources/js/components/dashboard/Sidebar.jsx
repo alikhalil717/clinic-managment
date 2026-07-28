@@ -53,7 +53,15 @@ const Sidebar = ({ role = "admin" }) => {
         {/* إخفاء الإعدادات والتقارير إذا كان الدور سكرتاريا */}
         {role === "admin" && (
           <>
-            {/* 👈 تحويل التقارير إلى Link */}
+            <Link
+              to="/doctors"
+              className={`menu-item ${location.pathname === '/doctors' ? 'active' : ''}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <FiUsers />
+              <span>Doctors</span>
+            </Link>
+
             <Link
               to="/reports"
               className={`menu-item ${location.pathname === '/reports' ? 'active' : ''}`}
@@ -62,8 +70,7 @@ const Sidebar = ({ role = "admin" }) => {
               <FiFileText />
               <span>Reports</span>
             </Link>
-            
-            {/* 👈 تحويل الإعدادات إلى Link */}
+
             <Link
               to="/settings"
               className={`menu-item ${location.pathname === '/settings' ? 'active' : ''}`}

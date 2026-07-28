@@ -100,10 +100,13 @@ class AdminTreatmentPlanService
                 'stages' => $plan->stages->map(function ($stage) {
                     return [
                         'stage_id' => $stage->stage_id,
-                        'name' => $stage->name,
+                        'stage_name' => $stage->stage_name,
                         'description' => $stage->description,
-                        'order' => $stage->order,
                         'status' => $stage->status,
+                        'estimated_cost' => $stage->estimated_cost,
+                        'actual_cost' => $stage->actual_cost,
+                        'start_date' => $stage->start_date,
+                        'end_date' => $stage->end_date,
                     ];
                 }),
             ],

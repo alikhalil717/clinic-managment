@@ -1,16 +1,23 @@
 import React from "react";
 
 const RecentAppointments = ({ appointments }) => {
-  const data = appointments || [
-    { id: 1, patientName: 'أحمد خالد', time: '09:00 AM', doctorName: 'د. سارة', status: 'Confirmed' },
-    { id: 2, patientName: 'منى علي', time: '10:30 AM', doctorName: 'د. خالد', status: 'Pending' },
-  ];
+  const data = appointments || [];
+
+  if (data.length === 0) {
+    return (
+      <div className="appointments-section">
+        <div className="table-header">
+          <h3>Recent Appointments</h3>
+        </div>
+        <p style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>No recent appointments.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="appointments-section">
       <div className="table-header">
         <h3>Recent Appointments</h3>
-        <button className="btn-view-all">View All</button>
       </div>
 
       <table className="appointments-table">
@@ -24,12 +31,12 @@ const RecentAppointments = ({ appointments }) => {
         </thead>
         <tbody>
           {data.map((appointment) => (
-            <tr key={appointment.id}>
-              <td>{appointment.patientName}</td>
+            <tr key={appointment.appointment_id || appointment.id}>
+              <td>{appointment.patient_name || appointment.patientName}</td>
               <td>{appointment.time}</td>
-              <td>{appointment.doctorName}</td>
+              <td>{appointment.doctor_name || appointment.doctorName}</td>
               <td>
-                <span className={`status-badge ${appointment.status === 'Confirmed' ? 'status-confirmed' : 'status-pending'}`}>
+                <span className={`status-badge ${String(appointment.status || '').toLowerCase() === 'confirmed' ? 'status-confirmed' : 'status-pending'}`}>
                   {appointment.status}
                 </span>
               </td>

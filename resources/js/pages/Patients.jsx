@@ -1,15 +1,27 @@
-import React from "react";
-import Sidebar from "../components/dashboard/Sidebar"; 
-import Topbar from "../components/Topbar";   
-import "../styles/dashboard.css"; // 👈 هذا السطر هو اللي رح يصلح شكل الصفحة!
-
-const patientsData = [
-  { id: 1, name: "Ahmed Ali", age: 28, phone: "0999999999", condition: "Tooth Cleaning" },
-  { id: 2, name: "Sara Mohamed", age: 34, phone: "0988888888", condition: "Root Canal" },
-  { id: 3, name: "Omar Hassan", age: 22, phone: "0977777777", condition: "Braces" }
-];
+import React, { useState, useEffect } from "react";
+import Sidebar from "../components/dashboard/Sidebar";
+import Topbar from "../components/Topbar";
+import { getPatients } from "../services/adminService";
+import "../styles/dashboard.css";
 
 export default function Patients() {
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await getPatients();
+        setPatients(res.data || []);
+      } catch (err) {
+        console.error("Failed to load patients:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+  }, []);
+
   return (
     <div className="dashboard">
       <Sidebar />
@@ -20,34 +32,37 @@ export default function Patients() {
         <div className="patients-page" style={{ marginTop: "30px" }}>
           <div className="table-header" style={{ marginBottom: "20px" }}>
             <h2>Patients List</h2>
-            <button className="btn-primary" style={{ padding: "10px 20px", borderRadius: "8px" }}>
-              + Add Patient
-            </button>
           </div>
 
           <div className="appointments-table-container">
-            <table className="appointments-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Age</th>
-                  <th>Phone</th>
-                  <th>Condition</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patientsData.map((patient) => (
-                  <tr key={patient.id}>
-                    <td>{patient.id}</td>
-                    <td>{patient.name}</td>
-                    <td>{patient.age}</td>
-                    <td>{patient.phone}</td>
-                    <td>{patient.condition}</td>
+            {loading ? (
+              <p style={{ padding: "20px", textAlign: "center" }}>Loading patients...</p>
+            ) : patients.length === 0 ? (
+              <p style={{ padding: "20px", textAlign: "center" }}>No patients found.</p>
+            ) : (
+              <table className="appointments-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Date of Birth</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {patients.map((patient) => (
+                    <tr key={patient.patient_id}>
+                      <td>{patient.patient_id}</td>
+                      <td>{patient.first_name} {patient.last_name}</td>
+                      <td>{patient.email}</td>
+                      <td>{patient.phone}</td>
+                      <td>{patient.date_of_birth}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

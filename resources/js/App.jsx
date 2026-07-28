@@ -4,41 +4,37 @@ import SecretaryWorkflowPage from "./pages/SecretaryWorkflow";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
-import Patients from "./pages/Patients"; // استدعاء صفحة المرضى هنا
-import Appointments from "./pages/Appointments"; // استدعاء صفحة المواعيد هنا
+import Patients from "./pages/Patients";
+import Appointments from "./pages/Appointments";
+import Doctors from "./pages/Doctors";
+import Billing from "./pages/Billing";
 import SecretaryAppointments from "./pages/SecretaryAppointments";
 import SecretaryPatients from "./pages/SecretaryPatients";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        
         <Route path="/" element={<Login />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
+        {/* Admin protected routes */}
+        <Route path="/admin-dashboard" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/patients" element={<ProtectedRoute allowedRole="admin"><Patients /></ProtectedRoute>} />
+        <Route path="/appointments" element={<ProtectedRoute allowedRole="admin"><Appointments /></ProtectedRoute>} />
+        <Route path="/doctors" element={<ProtectedRoute allowedRole="admin"><Doctors /></ProtectedRoute>} />
+        <Route path="/billing" element={<ProtectedRoute allowedRole="admin"><Billing /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute allowedRole="admin"><Reports /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute allowedRole="admin"><Settings /></ProtectedRoute>} />
+
+        {/* Secretary routes */}
         <Route path="/secretary-dashboard" element={<SecretaryDashboard />} />
-
-        {/* مسار صفحة المرضى */}
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route
-          path="/secretary-dashboard"
-          element={<SecretaryWorkflowPage />}
-        />
-
-        {/* مسارات السكرتاريا الجديدة */}
-        <Route
-          path="/secretary-appointments"
-          element={<SecretaryAppointments />}
-        />
+        <Route path="/secretary-dashboard" element={<SecretaryWorkflowPage />} />
+        <Route path="/secretary-appointments" element={<SecretaryAppointments />} />
         <Route path="/secretary-patients" element={<SecretaryPatients />} />
-        
       </Routes>
-      
     </BrowserRouter>
   );
 }

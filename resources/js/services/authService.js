@@ -1,39 +1,33 @@
 import API from "../api/axios";
 
 // دالة تسجيل الدخول
-export const loginUser = async (credentials) => {
+export const loginUser = async (credentials, role) => {
   try {
-    const response = await API.post("/login", credentials);
-    
-    // إذا كان الباك اند يرجع Token عند النجاح
+    const endpoint = role === "admin" ? "/admin/login" : "/secretary/login";
+    const response = await API.post(endpoint, credentials);
+
     if (response.data && response.data.token) {
-      // تخزين التوكن في المتصفح (LocalStorage)
       localStorage.setItem("authToken", response.data.token);
-      
-      // تخزين دور المستخدم (أدمن أو سكرتاريا) للرجوع إليه لاحقاً
-      // افترضنا أن الباك اند يرجع نوع المستخدم، يمكنك تعديل "role" حسب استجابة الـ API الخاص بك
-      if (response.data.role) {
-        localStorage.setItem("userRole", response.data.role); 
-      }
+      // Extract role from the user object in the response, or use the passed role
+      const userRole = response.data.user?.role || role;
+      localStorage.setItem("userRole", userRole.toLowerCase());
     }
-    
+
     return response.data;
   } catch (error) {
-    // تنسيق الخطأ لتسهيل عرضه في واجهة المستخدم (LoginForm)
-    const errorMessage = error.response?.data?.message || "حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مرة أخرى.";
+    const errorMessage = error.response?.data?.message || "An error occurred during login.";
     throw new Error(errorMessage);
   }
 };
 
 // دالة تسجيل الخروج
-export const logoutUser = async () => {
+export const logoutUser = async (role) => {
   try {
-    // إرسال طلب للباك اند لإلغاء صلاحية التوكن الحالي (اختياري ومهم للأمان)
-    await API.post("/logout");
+    const endpoint = role === "admin" ? "/admin/logout" : "/secretary/logout";
+    await API.post(endpoint);
   } catch (error) {
     console.error("Error during logout API call", error);
   } finally {
-    // الأهم: مسح البيانات من المتصفح في جميع الأحوال
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
   }
