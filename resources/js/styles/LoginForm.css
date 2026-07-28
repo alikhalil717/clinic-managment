@@ -1,0 +1,35 @@
+/* حاوية الحقل (مهم جداً تكون relative) */
+.login-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px; /* مسافة بين الحقول */
+}
+
+/* تنسيق الأيقونة لتكون داخل الحقل على اليسار */
+.login-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%); /* توسيط الأيقونة بشكل عمودي دقيق */
+  color: #94a3b8; /* لون رمادي هادئ للأيقونة */
+  font-size: 18px;
+  pointer-events: none; /* لحتى ما تمنع المستخدم من النقر على الحقل */
+}
+
+/* تنسيق الحقل نفسه */
+.login-input-wrapper input {
+  width: 100%;
+  padding: 12px 15px 12px 40px !important; /* الـ 40px عاليسار هي اللي بتترك مساحة للأيقونة */
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.login-input-wrapper input:focus {
+  outline: none;
+  border-color: #1e3a8a; /* لون أزرق عند التحديد (نفس لون زر Login) */
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}

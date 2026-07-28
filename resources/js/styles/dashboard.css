@@ -1,0 +1,531 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  font-family: Arial, sans-serif;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  width: 260px;
+  background: linear-gradient(
+    180deg,
+    #041c4a,
+    #001233
+  );
+
+  color: white;
+  padding: 30px 20px;
+}
+
+.logo-section {
+  margin-bottom: 25px;
+}
+.logo-section img {
+  width: 150px;
+   margin-bottom: -5px;
+   margin-left: 25px;
+  
+}
+
+.logo-section h2 {
+  font-size: 30px;
+  margin-bottom: 30px;
+  margin-left: 25px;
+  
+}
+
+
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 15px;
+  border-radius: 14px;
+
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.menu-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.menu-item.active {
+  background: rgba(255,255,255,0.15);
+}
+
+.menu-item svg {
+  font-size: 20px;
+}
+
+/* MAIN CONTENT */
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* TOPBAR */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 40px;
+}
+
+.topbar h1 {
+  color: #0f1e54;
+  font-size: 34px;
+}
+
+.search-input {
+  width: 260px;
+  padding: 14px 18px;
+
+  border: 1px solid #ddd;
+  border-radius: 14px;
+
+  outline: none;
+  font-size: 15px;
+}
+
+/* WELCOME */
+
+.welcome-section h2 {
+  color: #0f1e54;
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.welcome-section p {
+  color: #6c7a99;
+  font-size: 18px;
+}
+.search-box {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #7b8ba7;
+  font-size: 18px;
+}
+
+.search-input {
+  width: 260px;
+  padding: 14px 18px 14px 45px;
+
+  border: 1px solid #ddd;
+  border-radius: 14px;
+
+  outline: none;
+  font-size: 15px;
+}
+
+/* =========================================
+   Stats Cards (البطاقات الإحصائية)
+   ========================================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stats-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.stats-icon-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+}
+
+.stats-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-title {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.stats-value {
+  color: #0f172a;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+/* =========================================
+   Appointments Table (  في الداشبوردجدول المواعيد)
+   ========================================= */
+.appointments-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(190, 16, 16, 0.04);
+}
+/**********************/
+
+
+
+
+.btn-view-all {
+  background: #1d3670;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-view-all:hover {
+  background: #2b6cb0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================
+   Workflow Side-by-Side Container
+   ========================================= */
+/* حاوية مخصصة لصفحة السكرتاريا فقط لحتى ما نأثر على باقي النظام */
+.secretary-layout-wrapper {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.secretary-dashboard-workflow,
+.appointments-management-workflow {
+  flex: 1;
+  background-color: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.workflow-section {
+  margin-bottom: 30px;
+}
+
+/* =========================================
+   Quick Actions Section (الأزرار الكبيرة)
+   ========================================= */
+.quick-actions-container {
+  display: flex;
+  gap: 15px;
+}
+
+.quick-action-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: 0.3s;
+}
+
+.quick-action-btn svg {
+  font-size: 20px;
+}
+
+.btn-success {
+  background-color: #38a169;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #2f855a;
+}
+
+/*btn-primary معرف سابقاً*/
+
+/* =========================================
+   Charts Section (الرسوم البيانية - Placeholder)
+   ========================================= */
+.chart-placeholder {
+  background-color: #f1f5f9;
+  height: 200px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 15px;
+}
+
+/* =========================================
+   Table Styles Additions (الجدول المتقدم)
+   ========================================= */
+.filters-workflow {
+  display: flex;
+  gap: 15px;
+}
+
+.filters-input {
+  width: auto !important;
+  padding: 10px;
+}
+
+/* الصور الشخصية (Avatars) */
+.patient-avatar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-avatar {
+  width: 35px;
+  height: 35px;
+  background-color: #06b6d4;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.doctor-avatar {
+  background-color: #ec4899;
+}
+
+.patient-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-name-eng {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* الأوسمة الملونة (Status Badges) */
+.badge-filled {
+  color: white !important;
+}
+
+.status-checkedin {
+  background: #f97316;
+}
+
+.status-waiting {
+  background: #eab308;
+}
+
+/* .status-confirmed معرف سابقاً */
+
+/* أزرار الإجراءات في الجدول */
+.action-buttons-container {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-light {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-light:hover {
+  background-color: #cbd5e1;
+}
+
+.btn-subtle-danger {
+  background-color: white;
+  color: #e53e3e;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-subtle-danger:hover {
+  background-color: #fff5f5;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+
+
+/* =========================================
+   إصلاح فلاتر صفحة المواعيد (Secretary)
+   ========================================= */
+
+/* إلغاء التباعد المفرط وجمع الحقول مع بعضها */
+.table-header.filters-workflow {
+  justify-content: flex-start; 
+  gap: 20px;
+}
+
+/* تحديد عرض حاوية البحث لتكون على قد المحتوى */
+.filters-workflow .search-box {
+  width: max-content;
+  margin: 0;
+}
+
+/* ترتيب الحقول الداخلية وإبعاد النص عن الأيقونة */
+.filters-workflow .filters-input {
+  padding: 10px 15px 10px 40px !important; /* 40px من اليسار لترك مساحة للأيقونة */
+  min-width: 180px; /* توحيد حجم الحقلين */
+  height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  color: #334155;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filters-workflow .filters-input:hover {
+  border-color: #94a3b8;
+}
+
+.filters-workflow .filters-input:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+
+/* =========================================
+   تنسيقات صفحة المرضى (Secretary Patients)
+   ========================================= */
+
+.page-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+
+
+.quick-actions-row {
+  display: flex;
+  align-items: center;
+}
+
+/* ألوان شارات الحالات للمرضى */
+.status-active {
+  background-color: #22c55e !important;
+}
+
+.status-intreatment {
+  background-color: #eab308 !important;
+}
+
+/* تنسيق أزرار التنقل (Pagination) */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 25px;
+  padding-bottom: 10px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  color: #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(.active) {
+  background-color: #f1f5f9;
+}
+
+.page-btn.active {
+  background-color: #1e3a8a; /* لون DentaPrint الأزرق الغامق */
+  color: white;
+  border-color: #1e3a8a;
+}
+
+.page-btn.text-btn {
+  border: none;
+  background: transparent;
+  color: #64748b;
+}
+
+.page-btn.text-btn:hover {
+  color: #0f172a;
+}
