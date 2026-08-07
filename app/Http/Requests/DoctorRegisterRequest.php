@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class DoctorRegisterRequest extends FormRequest
 {
@@ -24,6 +27,18 @@ class DoctorRegisterRequest extends FormRequest
             'years_of_experience' => ['required', 'integer', 'min:0'],
             'rating' => ['nullable', 'numeric', 'min:0', 'max:5'],
             'reviews_count' => ['nullable', 'integer', 'min:0'],
+            'working_days' => ['sometimes', 'array'],
+            'working_days.*' => ['string', 'in:saturday,sunday,monday,tuesday,wednesday,thursday,friday'],
         ];
+    }
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422)
+        );
     }
 }

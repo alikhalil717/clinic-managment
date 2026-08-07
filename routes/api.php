@@ -6,13 +6,16 @@ use App\Http\Controllers\Api\DoctorProfileController;
 use App\Http\Controllers\Api\PatientAuthController;
 use App\Http\Controllers\Api\PatientDashboardController;
 use App\Http\Controllers\Api\SecretaryAuthController;
-
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminDoctorController;
 use App\Http\Controllers\Api\AdminPatientController;
 use App\Http\Controllers\Api\AdminAppointmentController;
 use App\Http\Controllers\Api\AdminTreatmentPlanController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\PatientAppointmentController;
+use App\Http\Controllers\Api\PatientTreatmentPlanController;
+use App\Http\Controllers\Api\DoctorAppointmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -81,7 +84,6 @@ Route::prefix('secretary')->group(function (): void {
         ->middleware('secretary.bearer:Secretary');
 });
 //! Admin manage dashboard
-//TODO:  make the controller for admin dashboard with Request and  service and resource
 Route::prefix('admin')->group(function (): void {
     Route::get('/dashboard', [AdminDashboardController::class, 'dashboard'])
         ->middleware('admin.bearer:Admin');
@@ -124,6 +126,15 @@ Route::prefix('admin')->group(function (): void {
 
 //! Dashboard & Doctors
 Route::get('/doctors', [PatientDashboardController::class, 'allDoctors']);
+
+//! Appointment booking & availability
+Route::prefix('appointments')->group(function (): void {
+    Route::post('/diagnostic', [AppointmentController::class, 'createDiagnostic']);
+    Route::get('/diagnostic/busy', [AppointmentController::class, 'diagnosticBusySlots']);
+    Route::post('/normal', [AppointmentController::class, 'createNormal']);
+});
+Route::get('/doctors/{id}/availability', [AppointmentController::class, 'doctorAvailability']);
+Route::get('/doctors/{id}/busy', [AppointmentController::class, 'doctorBusySlots']);
 
 //! patient appointments
 //TODO:  make the controller for patient appointments with Request and  service and resource

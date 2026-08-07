@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreDoctorRequest extends FormRequest
 {
@@ -22,6 +25,18 @@ class StoreDoctorRequest extends FormRequest
             'specialization' => ['required', 'string', 'max:255'],
             'license_number' => ['required', 'string', 'max:255'],
             'years_of_experience' => ['required', 'integer', 'min:0'],
+            'working_days' => ['sometimes', 'array'],
+            'working_days.*' => ['string', 'in:saturday,sunday,monday,tuesday,wednesday,thursday,friday'],
         ];
+    }
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422)
+        );
     }
 }

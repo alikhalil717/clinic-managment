@@ -23,7 +23,7 @@ class DoctorProfileTest extends TestCase
 
         // Create a patient user and patient
         $this->patientUser = User::factory()->create([
-            'role' => 'Patient',
+            'role' => 'patient',
         ]);
         Patient::create([
             'patient_id' => $this->patientUser->user_id,
@@ -32,7 +32,7 @@ class DoctorProfileTest extends TestCase
 
         // Create a doctor with full profile info
         $doctorUser = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
             'first_name' => 'Ahmad',
             'last_name' => 'Al-Khatib',
         ]);

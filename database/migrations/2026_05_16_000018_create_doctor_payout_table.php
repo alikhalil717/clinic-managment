@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('session_id');
             $table->float('amount');
             $table->dateTime('payout_date');
-            $table->string('status');
+            $table->enum('status', ['pending', 'paid'])->default('pending');
             $table->text('notes');
 
             $table->foreign('doctor_id')->references('doctor_id')->on('doctor')->cascadeOnDelete();

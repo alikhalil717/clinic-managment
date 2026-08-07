@@ -21,7 +21,7 @@ class DiagnosisFactory extends Factory
             'session_id' => null,
             'diagnosis_name' => $this->faker->word(),
             'description' => $this->faker->sentence(),
-            'severity' => $this->faker->randomElement(['Low', 'Medium', 'High']),
+            'severity' => $this->faker->randomElement(['low', 'medium', 'high']),
             'diagnosed_at' => $this->faker->dateTime(),
         ];
     }

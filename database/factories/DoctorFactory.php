@@ -17,7 +17,7 @@ class DoctorFactory extends Factory
     {
         return [
             'doctor_id' => User::factory()->state([
-                'role' => 'Doctor',
+                'role' => 'doctor',
             ]),
             'specialization' => fake()->randomElement(['General Dentistry', 'Orthodontics', 'Endodontics', 'Pediatric Dentistry']),
             'license_number' => fake()->unique()->bothify('LIC-#####'),
@@ -36,6 +36,14 @@ class DoctorFactory extends Factory
                 ['Orthodontics', 'Clear Aligners', 'Braces', 'Smile Design', 'Teeth Whitening', 'Cosmetic Dentistry', 'Endodontics', 'Pediatric Dentistry'],
                 fake()->numberBetween(3, 6)
             ),
+            'working_days' => ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'],
+            'working_hours' => [
+                'saturday' => ['start' => '10:00', 'end' => '15:00'],
+                'sunday' => ['start' => '09:00', 'end' => '14:00'],
+                'monday' => ['start' => '10:00', 'end' => '15:00'],
+                'tuesday' => ['start' => '09:00', 'end' => '14:00'],
+                'wednesday' => ['start' => '15:00', 'end' => '20:00'],
+            ],
         ];
     }
 }

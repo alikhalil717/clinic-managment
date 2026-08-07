@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('allergy_id');
             $table->unsignedBigInteger('record_id');
             $table->string('allergy_name');
-            $table->string('severity');
+            $table->enum('severity', ['low', 'medium', 'high'])->default('low');
             $table->text('notes');
 
             $table->foreign('record_id')->references('record_id')->on('medical_record')->cascadeOnDelete();

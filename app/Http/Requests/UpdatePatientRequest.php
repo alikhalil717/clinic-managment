@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdatePatientRequest extends FormRequest
 {
@@ -23,5 +26,14 @@ class UpdatePatientRequest extends FormRequest
             'password' => ['sometimes', 'string', 'min:8'],
             'date_of_birth' => ['sometimes', 'date'],
         ];
+    }
+    protected function failedValidation(Validator $validator){
+        throw new HttpResponseException(
+            response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422)
+        );
     }
 }

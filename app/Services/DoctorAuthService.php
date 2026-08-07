@@ -41,6 +41,10 @@ class DoctorAuthService
             $doctorData['years_of_experience'] = $data['years_of_experience'];
             unset($data['years_of_experience']);
         }
+        if (isset($data['working_days'])) {
+            $doctorData['working_days'] = $data['working_days'];
+            unset($data['working_days']);
+        }
 
         if (!empty($doctorData)) {
             Doctor::query()->where('doctor_id', $user->user_id)->update($doctorData);
@@ -75,7 +79,7 @@ class DoctorAuthService
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => $data['password'],
-            'role' => 'Doctor',
+            'role' => 'doctor',
             'api_token' => Str::random(60),
         ]);
 
@@ -86,6 +90,7 @@ class DoctorAuthService
             'years_of_experience' => $data['years_of_experience'],
             'rating' => $data['rating'] ?? 0,
             'reviews_count' => $data['reviews_count'] ?? 0,
+            'working_days' => $data['working_days'] ?? null,
         ]);
 
         return response()->json([
@@ -103,7 +108,7 @@ class DoctorAuthService
 
         $user = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', 'Doctor')
+            ->where('role', 'doctor')
             ->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
@@ -129,7 +134,7 @@ class DoctorAuthService
     {
         $user = $request->user();
 
-        if (! $user instanceof User || $user->role !== 'Doctor') {
+        if (! $user instanceof User || $user->role !== 'doctor') {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',

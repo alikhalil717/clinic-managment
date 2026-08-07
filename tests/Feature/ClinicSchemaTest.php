@@ -37,7 +37,7 @@ class ClinicSchemaTest extends TestCase
             'last_name' => 'Admin',
             'email' => 'admin@example.com',
             'phone' => '1111111111',
-            'role' => 'Admin',
+            'role' => 'admin',
         ]);
 
         $secretaryUser = User::factory()->create([
@@ -45,7 +45,7 @@ class ClinicSchemaTest extends TestCase
             'last_name' => 'Secretary',
             'email' => 'secretary@example.com',
             'phone' => '2222222222',
-            'role' => 'Secretary',
+            'role' => 'secretary',
         ]);
 
         $doctorUser = User::factory()->create([
@@ -53,7 +53,7 @@ class ClinicSchemaTest extends TestCase
             'last_name' => 'Doctor',
             'email' => 'doctor@example.com',
             'phone' => '3333333333',
-            'role' => 'Doctor',
+            'role' => 'doctor',
         ]);
 
         $patientUser = User::factory()->create([
@@ -61,7 +61,7 @@ class ClinicSchemaTest extends TestCase
             'last_name' => 'Patient',
             'email' => 'patient@example.com',
             'phone' => '4444444444',
-            'role' => 'Patient',
+            'role' => 'patient',
         ]);
 
         $admin = Admin::create([
@@ -71,7 +71,7 @@ class ClinicSchemaTest extends TestCase
 
         $secretary = Secretary::create([
             'secretary_id' => $secretaryUser->user_id,
-            'shift' => 'Morning',
+            'shift' => 'morning',
             'office_number' => 'OFF-101',
         ]);
 
@@ -104,7 +104,7 @@ class ClinicSchemaTest extends TestCase
         $allergy = Allergy::create([
             'record_id' => $medicalRecord->record_id,
             'allergy_name' => 'Penicillin',
-            'severity' => 'High',
+            'severity' => 'high',
             'notes' => 'Avoid penicillin-based antibiotics',
         ]);
 
@@ -119,7 +119,7 @@ class ClinicSchemaTest extends TestCase
             'date' => '2026-05-16',
             'start_time' => '09:00:00',
             'end_time' => '09:30:00',
-            'status' => 'Scheduled',
+            'status' => 'confirmed',
             'notes' => 'Initial consultation',
         ]);
 
@@ -147,7 +147,7 @@ class ClinicSchemaTest extends TestCase
             'description' => 'Cleaning and preparation',
             'estimated_cost' => 400.00,
             'actual_cost' => 450.00,
-            'status' => 'In-Progress',
+            'status' => 'in_progress',
             'start_date' => '2026-05-16',
             'end_date' => '2026-05-20',
         ]);
@@ -156,11 +156,11 @@ class ClinicSchemaTest extends TestCase
             'patient_id' => $patient->patient_id,
             'tooth_id' => $tooth->tooth_id,
             'doctor_id' => $doctor->doctor_id,
-            'condition_status' => 'Damaged',
-            'treatment_type' => 'Filling',
+            'condition_status' => 'damaged',
+            'treatment_type' => 'filling',
             'treatment_description' => 'Composite filling required',
             'estimated_price' => 250.00,
-            'severity_level' => 'Medium',
+            'severity_level' => 'medium',
             'notes' => 'Monitor sensitivity',
             'session_id' => $treatmentSession->session_id,
             'updated_at' => now(),
@@ -181,17 +181,17 @@ class ClinicSchemaTest extends TestCase
             'session_id' => $treatmentSession->session_id,
             'diagnosis_name' => 'Tooth Decay',
             'description' => 'Moderate decay in upper incisor',
-            'severity' => 'Medium',
+            'severity' => 'medium',
             'diagnosed_at' => now(),
         ]);
 
         $payment = Payment::create([
             'patient_id' => $patient->patient_id,
             'amount' => 250.00,
-            'method' => 'Cash',
+            'method' => 'cash',
             'date' => now(),
             'related_session_id' => $treatmentSession->session_id,
-            'type' => 'SessionPayment',
+            'type' => 'session_payment',
             'is_income' => true,
         ]);
 
@@ -200,7 +200,7 @@ class ClinicSchemaTest extends TestCase
             'session_id' => $treatmentSession->session_id,
             'amount' => 150.00,
             'payout_date' => now(),
-            'status' => 'Pending',
+            'status' => 'pending',
             'notes' => 'Paid after insurance clearance',
         ]);
 
@@ -215,7 +215,7 @@ class ClinicSchemaTest extends TestCase
             'user_id' => $patientUser->user_id,
             'title' => 'Appointment reminder',
             'message' => 'Your appointment is tomorrow at 9 AM.',
-            'type' => 'Appointment',
+            'type' => 'appointment',
             'related_id' => $appointment->appointment_id,
             'is_read' => false,
             'created_at' => now(),
@@ -224,14 +224,14 @@ class ClinicSchemaTest extends TestCase
         $patientPoints = PatientPoints::create([
             'patient_id' => $patient->patient_id,
             'points' => 10,
-            'source' => 'Payment',
+            'source' => 'payment',
             'related_id' => $payment->payment_id,
             'description' => 'Loyalty points for session payment',
             'created_at' => now(),
         ]);
 
         $this->assertSame('manage-users,manage-reports', $admin->user->admin->permissions);
-        $this->assertSame('Morning', $secretary->user->secretary->shift);
+        $this->assertSame('morning', $secretary->user->secretary->shift);
         $this->assertSame('General Dentistry', $doctor->user->doctor->specialization);
         $this->assertSame('Paul', $patient->user->patient->user->first_name);
 
@@ -246,13 +246,13 @@ class ClinicSchemaTest extends TestCase
         $this->assertSame('Treatment session one', $treatmentSession->notes);
         $this->assertSame(800.00, $treatmentSession->estimated_cost);
         $this->assertSame('Filled', $treatmentDetails->new_condition);
-        $this->assertSame('Damaged', $toothCondition->condition_status);
+        $this->assertSame('damaged', $toothCondition->condition_status);
 
         $this->assertSame('Tooth Decay', $diagnosis->diagnosis_name);
         $this->assertSame('Paul', $diagnosis->patient->user->first_name);
 
         $this->assertSame(250.00, $payment->amount);
-        $this->assertSame('Pending', $doctorPayout->status);
+        $this->assertSame('pending', $doctorPayout->status);
         $this->assertSame(5, $rating->rating);
         $this->assertSame('Appointment reminder', $notification->title);
         $this->assertSame(10, $patientPoints->points);

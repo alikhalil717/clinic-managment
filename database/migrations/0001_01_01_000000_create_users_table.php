@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone');
             $table->string('password');
-            $table->string('role');
+            $table->enum('role', ['admin', 'doctor', 'patient', 'secretary'])->default('patient');
             $table->dateTime('created_at');
         });
 

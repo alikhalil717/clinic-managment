@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StorePatientRequest extends FormRequest
 {
@@ -21,5 +24,14 @@ class StorePatientRequest extends FormRequest
             'password' => ['required', 'string', 'min:8'],
             'date_of_birth' => ['required', 'date'],
         ];
+    }
+      protected function failedValidation(Validator $validator){
+   throw new HttpResponseException(
+            response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422)
+        );
     }
 }

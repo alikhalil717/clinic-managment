@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id('payment_id');
             $table->unsignedBigInteger('patient_id');
             $table->float('amount');
-            $table->string('method');
+            $table->enum('method', ['cash', 'card', 'transfer'])->default('cash');
             $table->dateTime('date');
             $table->unsignedBigInteger('related_session_id')->nullable();
-            $table->string('type');
+            $table->enum('type', ['session_payment', 'plan_payment', 'deposit'])->default('session_payment');
             $table->boolean('is_income');
 
             $table->foreign('patient_id')->references('patient_id')->on('patient')->cascadeOnDelete();

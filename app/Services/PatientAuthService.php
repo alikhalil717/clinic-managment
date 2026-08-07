@@ -64,7 +64,7 @@ class PatientAuthService
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => $data['password'],
-            'role' => 'Patient',
+            'role' => 'patient',
             'api_token' => Str::random(60),
         ]);
 
@@ -88,7 +88,7 @@ class PatientAuthService
 
         $user = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', 'Patient')
+            ->where('role', 'patient')
             ->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
@@ -114,7 +114,7 @@ class PatientAuthService
     {
         $user = $request->user();
 
-        if (! $user instanceof User || $user->role !== 'Patient') {
+        if (! $user instanceof User || $user->role !== 'patient') {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',

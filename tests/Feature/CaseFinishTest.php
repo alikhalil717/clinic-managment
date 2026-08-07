@@ -23,7 +23,7 @@ class CaseFinishTest extends TestCase
         parent::setUp();
 
         $this->doctorUser = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
         ]);
         Doctor::factory()->create([
             'doctor_id' => $this->doctorUser->user_id,

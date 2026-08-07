@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->string('diagnosis_name');
             $table->text('description')->nullable();
-            $table->string('severity')->nullable();
+            $table->enum('severity', ['low', 'medium', 'high'])->nullable()->default(null);
             $table->dateTime('diagnosed_at')->nullable();
 
             $table->foreign('record_id')->references('record_id')->on('medical_record')->cascadeOnDelete();

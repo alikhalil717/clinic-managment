@@ -19,7 +19,7 @@ class NotificationFactory extends Factory
             'user_id' => User::factory(),
             'title' => fake()->sentence(3),
             'message' => fake()->sentence(),
-            'type' => fake()->randomElement(['Appointment', 'Payment', 'Treatment', 'System', 'Points']),
+            'type' => fake()->randomElement(['appointment', 'payment', 'treatment', 'system', 'points']),
             'related_id' => null,
             'is_read' => fake()->boolean(),
             'created_at' => now(),

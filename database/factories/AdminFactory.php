@@ -17,7 +17,7 @@ class AdminFactory extends Factory
     {
         return [
             'admin_id' => User::factory()->state([
-                'role' => 'Admin',
+                'role' => 'admin',
             ]),
             'permissions' => fake()->sentence(),
         ];

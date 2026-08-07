@@ -6,9 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class AdminLoginRequest extends FormRequest
+class StoreDiagnosticAppointmentRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
@@ -17,10 +16,20 @@ class AdminLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'min:3', 'max:255'],
-            'password' => ['required', 'string'],
+            'patient_id' => ['required', 'integer', 'exists:patient,patient_id'],
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'time' => ['required', 'date_format:H:i', 'after_or_equal:09:00', 'before_or_equal:16:00'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'time.after_or_equal' => 'Diagnostic appointments are available between 09:00 and 16:00.',
+            'time.before_or_equal' => 'Diagnostic appointments are available between 09:00 and 16:00.',
+        ];
+    }
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
@@ -28,7 +37,7 @@ class AdminLoginRequest extends FormRequest
                 'success' => false,
                 'message' => 'Validation errors',
                 'errors' => $validator->errors()
-            ], 422) 
+            ], 422)
         );
     }
 }

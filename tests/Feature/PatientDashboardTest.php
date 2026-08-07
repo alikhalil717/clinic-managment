@@ -41,7 +41,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->addDays(3)->toDateString(),
             'start_time' => '09:00:00',
-            'status' => 'Scheduled',
+            'status' => 'confirmed',
             'notes' => 'Teeth Cleaning',
         ]);
 
@@ -100,7 +100,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->subDay()->toDateString(),
             'start_time' => '08:00:00',
-            'status' => 'Scheduled',
+            'status' => 'confirmed',
             'notes' => 'Old appointment',
         ]);
 
@@ -110,7 +110,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->addDay()->toDateString(),
             'start_time' => '10:00:00',
-            'status' => 'cancelled',
+            'status' => 'canceled',
             'notes' => 'Cancelled one',
         ]);
 
@@ -120,7 +120,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->addDay()->toDateString(),
             'start_time' => '11:00:00',
-            'status' => 'completed',
+            'status' => 'finished',
             'notes' => 'Completed one',
         ]);
 
@@ -154,7 +154,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->addDays(2)->toDateString(),
             'start_time' => '10:30:00',
-            'status' => 'Scheduled',
+            'status' => 'confirmed',
             'notes' => 'Checkup',
         ]);
         Appointment::factory()->create([
@@ -162,7 +162,7 @@ class PatientDashboardTest extends TestCase
             'doctor_id' => $this->doctor->doctor_id,
             'date' => now()->addDays(5)->toDateString(),
             'start_time' => '14:00:00',
-            'status' => 'Scheduled',
+            'status' => 'confirmed',
             'notes' => 'Filling',
         ]);
 
@@ -176,7 +176,7 @@ class PatientDashboardTest extends TestCase
             ->assertJsonCount(2, 'appointments')
             ->assertJsonPath('appointments.0.title', 'Checkup')
             ->assertJsonPath('appointments.0.time', '10:30 AM')
-            ->assertJsonPath('appointments.0.status', 'Scheduled')
+            ->assertJsonPath('appointments.0.status', 'confirmed')
             ->assertJsonPath('appointments.1.title', 'Filling');
     }
 

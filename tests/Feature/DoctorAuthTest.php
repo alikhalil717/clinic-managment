@@ -35,7 +35,7 @@ class DoctorAuthTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'ali.doctor@example.com',
-            'role' => 'Doctor',
+            'role' => 'doctor',
         ]);
 
         $this->assertDatabaseHas('doctor', [
@@ -46,7 +46,7 @@ class DoctorAuthTest extends TestCase
     public function test_doctor_can_login_and_get_new_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
             'email' => 'login.doctor@example.com',
             'password' => Hash::make('password123'),
         ]);
@@ -75,7 +75,7 @@ class DoctorAuthTest extends TestCase
     public function test_doctor_can_logout_with_bearer_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
         ]);
 
         Doctor::create([
@@ -101,7 +101,7 @@ class DoctorAuthTest extends TestCase
     public function test_doctor_can_get_profile_with_bearer_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
         ]);
 
         Doctor::create([
@@ -125,7 +125,7 @@ class DoctorAuthTest extends TestCase
     public function test_doctor_can_update_profile(): void
     {
         $user = User::factory()->create([
-            'role' => 'Doctor',
+            'role' => 'doctor',
             'first_name' => 'OldDoc',
         ]);
 

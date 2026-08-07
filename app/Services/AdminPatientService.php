@@ -53,7 +53,7 @@ class AdminPatientService
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
-            'role' => 'Patient',
+            'role' => 'patient',
             'api_token' => Str::random(60),
         ]);
 

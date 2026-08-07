@@ -19,10 +19,10 @@ class PaymentFactory extends Factory
         return [
             'patient_id' => Patient::factory(),
             'amount' => fake()->randomFloat(2, 20, 5000),
-            'method' => fake()->randomElement(['Cash', 'Card', 'Transfer']),
+            'method' => fake()->randomElement(['cash', 'card', 'transfer']),
             'date' => now(),
             'related_session_id' => TreatmentSession::factory(),
-            'type' => fake()->randomElement(['SessionPayment', 'PlanPayment', 'Deposit']),
+            'type' => fake()->randomElement(['session_payment', 'plan_payment', 'deposit']),
             'is_income' => true,
         ];
     }

@@ -17,7 +17,7 @@ class PatientFactory extends Factory
     {
         return [
             'patient_id' => User::factory()->state([
-                'role' => 'Patient',
+                'role' => 'patient',
             ]),
             'date_of_birth' => fake()->date(),
         ];

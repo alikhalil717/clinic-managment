@@ -21,7 +21,7 @@ class SecretaryAuthService
 
         $user = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', 'Secretary')
+            ->where('role', 'secretary')
             ->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
@@ -47,7 +47,7 @@ class SecretaryAuthService
     {
         $user = $request->user();
 
-        if (! $user instanceof User || $user->role !== 'Secretary') {
+        if (! $user instanceof User || $user->role !== 'secretary') {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',

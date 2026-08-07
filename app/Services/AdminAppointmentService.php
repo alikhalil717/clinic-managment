@@ -7,9 +7,6 @@ use Illuminate\Http\JsonResponse;
 
 class AdminAppointmentService
 {
-    /**
-     * Get paginated list of all appointments (read-only for admin).
-     */
     public function index(): JsonResponse
     {
         $appointments = Appointment::with(['doctor.user', 'patient.user'])
@@ -28,6 +25,7 @@ class AdminAppointmentService
                         'doctor_id' => $appointment->doctor?->doctor_id,
                         'name' => $appointment->doctor?->user?->first_name . ' ' . $appointment->doctor?->user?->last_name,
                         'specialization' => $appointment->doctor?->specialization,
+                        'working_days' => $appointment->doctor?->working_days,
                     ],
                     'patient' => [
                         'patient_id' => $appointment->patient?->patient_id,
@@ -63,6 +61,7 @@ class AdminAppointmentService
                     'doctor_id' => $appointment->doctor?->doctor_id,
                     'name' => $appointment->doctor?->user?->first_name . ' ' . $appointment->doctor?->user?->last_name,
                     'specialization' => $appointment->doctor?->specialization,
+                    'working_days' => $appointment->doctor?->working_days,
                 ],
                 'patient' => [
                     'patient_id' => $appointment->patient?->patient_id,

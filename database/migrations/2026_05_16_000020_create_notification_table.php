@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->text('message');
-            $table->string('type');
+            $table->enum('type', ['appointment', 'payment', 'treatment', 'system', 'points'])->default('system');
             $table->unsignedBigInteger('related_id')->nullable();
             $table->boolean('is_read');
             $table->dateTime('created_at');

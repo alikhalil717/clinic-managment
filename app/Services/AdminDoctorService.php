@@ -32,6 +32,7 @@ class AdminDoctorService
                     'years_of_experience' => $doctor->years_of_experience,
                     'rating' => $doctor->rating,
                     'reviews_count' => $doctor->reviews_count,
+                    'working_days' => $doctor->working_days,
                     'profile_image' => $doctor->user->profile_image
                         ? asset('storage/' . $doctor->user->profile_image)
                         : null,
@@ -57,7 +58,7 @@ class AdminDoctorService
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
-            'role' => 'Doctor',
+            'role' => 'doctor',
             'api_token' => Str::random(60),
         ]);
 
@@ -68,6 +69,7 @@ class AdminDoctorService
             'years_of_experience' => $data['years_of_experience'],
             'rating' => 0,
             'reviews_count' => 0,
+            'working_days' => $data['working_days'] ?? null,
         ]);
 
         return response()->json([
@@ -140,6 +142,9 @@ class AdminDoctorService
         }
         if (isset($data['expertise'])) {
             $doctorData['expertise'] = $data['expertise'];
+        }
+        if (isset($data['working_days'])) {
+            $doctorData['working_days'] = $data['working_days'];
         }
 
         if (!empty($doctorData)) {

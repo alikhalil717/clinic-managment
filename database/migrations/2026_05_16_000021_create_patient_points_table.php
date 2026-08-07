@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('point_id');
             $table->unsignedBigInteger('patient_id');
             $table->integer('points');
-            $table->string('source');
+            $table->enum('source', ['session', 'payment', 'rating', 'offer', 'manual'])->default('manual');
             $table->unsignedBigInteger('related_id')->nullable();
             $table->text('description');
             $table->dateTime('created_at');

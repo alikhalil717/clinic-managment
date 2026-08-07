@@ -31,6 +31,7 @@ class AdminTreatmentPlanService
                     'doctor' => [
                         'doctor_id' => $plan->doctor?->doctor_id,
                         'name' => 'Dr. ' . $plan->doctor?->user?->first_name . ' ' . $plan->doctor?->user?->last_name,
+                        'working_days' => $plan->doctor?->working_days,
                     ],
                     'case' => $plan->case ? [
                         'case_id' => $plan->case->case_id,
@@ -84,6 +85,7 @@ class AdminTreatmentPlanService
                     'doctor_id' => $plan->doctor?->doctor_id,
                     'name' => 'Dr. ' . $plan->doctor?->user?->first_name . ' ' . $plan->doctor?->user?->last_name,
                     'specialization' => $plan->doctor?->specialization,
+                    'working_days' => $plan->doctor?->working_days,
                 ],
                 'case' => $plan->case ? [
                     'case_id' => $plan->case->case_id,

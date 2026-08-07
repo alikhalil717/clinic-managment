@@ -21,7 +21,7 @@ class AdminAuthService
 
         $user = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', 'Admin')
+            ->where('role', 'admin')
             ->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
@@ -47,7 +47,7 @@ class AdminAuthService
     {
         $user = $request->user();
 
-        if (! $user instanceof User || $user->role !== 'Admin') {
+        if (! $user instanceof User || $user->role !== 'admin') {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',

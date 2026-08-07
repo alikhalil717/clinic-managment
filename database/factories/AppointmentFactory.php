@@ -22,7 +22,7 @@ class AppointmentFactory extends Factory
             'date' => fake()->date(),
             'start_time' => '09:00:00',
             'end_time' => '09:30:00',
-            'status' => fake()->randomElement(['Scheduled', 'Completed', 'Canceled']),
+            'status' => fake()->randomElement(['pending', 'confirmed', 'finished']),
             'notes' => fake()->sentence(),
         ];
     }

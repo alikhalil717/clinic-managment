@@ -19,7 +19,46 @@ class Doctor extends ClinicModel
             'education' => 'array',
             'certifications' => 'array',
             'expertise' => 'array',
+            'working_days' => 'array',
+            'working_hours' => 'array',
         ];
+    }
+
+    /**
+     * Get the working hours for a given day name (e.g. "saturday").
+     * Falls back to 09:00–17:00 when the doctor has no explicit schedule.
+     *
+     * @return array{start: string, end: string}|null
+     */
+    public function workingHoursForDay(string $day): ?array
+    {
+        $day = strtolower($day);
+
+        if (! in_array($day, $this->working_days ?? [], true)) {
+            return null;
+        }
+
+        $hours = $this->working_hours ?? [];
+
+        if (isset($hours[$day]) && isset($hours[$day]['start']) && isset($hours[$day]['end'])) {
+            return [
+                'start' => $hours[$day]['start'],
+                'end' => $hours[$day]['end'],
+            ];
+        }
+
+        // Default working hours fallback
+        return ['start' => '09:00', 'end' => '17:00'];
+    }
+
+    /**
+     * Check whether the doctor works on a given date (YYYY-MM-DD).
+     */
+    public function isWorkingOn(string $date): bool
+    {
+        $day = strtolower(\Carbon\Carbon::parse($date)->format('l')); // e.g. "Saturday"
+
+        return $this->workingHoursForDay($day) !== null;
     }
 
     public function user(): BelongsTo

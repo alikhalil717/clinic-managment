@@ -31,7 +31,7 @@ class PatientAuthTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'sara.patient@example.com',
-            'role' => 'Patient',
+            'role' => 'patient',
         ]);
 
         $this->assertDatabaseHas('patient', [
@@ -42,7 +42,7 @@ class PatientAuthTest extends TestCase
     public function test_patient_can_login_and_get_new_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Patient',
+            'role' => 'patient',
             'email' => 'login.patient@example.com',
             'password' => Hash::make('password123'),
         ]);
@@ -67,7 +67,7 @@ class PatientAuthTest extends TestCase
     public function test_patient_can_logout_with_bearer_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Patient',
+            'role' => 'patient',
         ]);
 
         Patient::create([
@@ -89,7 +89,7 @@ class PatientAuthTest extends TestCase
     public function test_patient_can_get_profile_with_bearer_token(): void
     {
         $user = User::factory()->create([
-            'role' => 'Patient',
+            'role' => 'patient',
         ]);
 
         Patient::create([
@@ -109,7 +109,7 @@ class PatientAuthTest extends TestCase
     public function test_patient_can_update_profile(): void
     {
         $user = User::factory()->create([
-            'role' => 'Patient',
+            'role' => 'patient',
             'first_name' => 'OldName',
         ]);
 

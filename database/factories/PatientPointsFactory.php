@@ -18,7 +18,7 @@ class PatientPointsFactory extends Factory
         return [
             'patient_id' => Patient::factory(),
             'points' => fake()->numberBetween(-50, 100),
-            'source' => fake()->randomElement(['Session', 'Payment', 'Rating', 'Offer', 'Manual']),
+            'source' => fake()->randomElement(['session', 'payment', 'rating', 'offer', 'manual']),
             'related_id' => null,
             'description' => fake()->sentence(),
             'created_at' => now(),

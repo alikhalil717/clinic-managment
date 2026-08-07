@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('secretary', function (Blueprint $table) {
             $table->unsignedBigInteger('secretary_id')->primary();
-            $table->string('shift');
+            $table->enum('shift', ['morning', 'evening', 'night'])->default('morning');
             $table->string('office_number');
 
             $table->foreign('secretary_id')->references('user_id')->on('users')->cascadeOnDelete();

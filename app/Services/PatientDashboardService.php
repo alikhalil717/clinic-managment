@@ -39,9 +39,9 @@ class PatientDashboardService
         $appointments = Appointment::with('doctor.user')
             ->where('patient_id', $patientId)
             ->where('date', '>=', now()->toDateString())
-            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->whereNotIn('status', ['canceled', 'finished', 'rejected'])
             ->orderBy('date')
-            ->orderBy('st art_time')
+            ->orderBy('start_time')
             ->get()
             ->map(function ($appointment) {
                 return [
@@ -113,7 +113,7 @@ class PatientDashboardService
         $appointment = Appointment::with('doctor.user')
             ->where('patient_id', $patientId)
             ->where('date', '>=', now()->toDateString())
-            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->whereNotIn('status', ['canceled', 'finished', 'rejected'])
             ->orderBy('date')
             ->orderBy('start_time')
             ->first();
@@ -158,6 +158,7 @@ class PatientDashboardService
                     'name' => 'Dr. ' . $doctor->user->first_name . ' ' . $doctor->user->last_name,
                     'specialty' => $doctor->specialization,
                     'experience' => $doctor->years_of_experience . '+ Years',
+                    'working_days' => $doctor->working_days,
                     'image' => $doctor->user->profile_image
                         ? asset('storage/' . $doctor->user->profile_image)
                         : null,

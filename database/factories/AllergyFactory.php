@@ -18,7 +18,7 @@ class AllergyFactory extends Factory
         return [
             'record_id' => MedicalRecord::factory(),
             'allergy_name' => fake()->word(),
-            'severity' => fake()->randomElement(['Low', 'Medium', 'High']),
+            'severity' => fake()->randomElement(['low', 'medium', 'high']),
             'notes' => fake()->sentence(),
         ];
     }

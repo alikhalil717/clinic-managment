@@ -21,7 +21,7 @@ class DoctorPayoutFactory extends Factory
             'session_id' => TreatmentSession::factory(),
             'amount' => fake()->randomFloat(2, 20, 5000),
             'payout_date' => now(),
-            'status' => fake()->randomElement(['Pending', 'Paid']),
+            'status' => fake()->randomElement(['pending', 'paid']),
             'notes' => fake()->sentence(),
         ];
     }

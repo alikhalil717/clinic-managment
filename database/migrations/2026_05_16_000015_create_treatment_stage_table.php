@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('description');
             $table->float('estimated_cost');
             $table->float('actual_cost');
-            $table->string('status');
+            $table->enum('status', ['upcoming', 'in_progress', 'completed', 'canceled'])->default('upcoming');
             $table->date('start_date');
             $table->date('end_date');
 

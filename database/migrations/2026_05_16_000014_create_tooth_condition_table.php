@@ -13,11 +13,11 @@ return new class extends Migration
             $table->unsignedBigInteger('patient_id');
             $table->unsignedBigInteger('tooth_id');
             $table->unsignedBigInteger('doctor_id');
-            $table->string('condition_status');
-            $table->string('treatment_type');
+            $table->enum('condition_status', ['healthy', 'decay', 'damaged', 'treated'])->default('healthy');
+            $table->enum('treatment_type', ['filling', 'extraction', 'root_canal', 'cleaning', 'whitening', 'crown'])->default('cleaning');
             $table->text('treatment_description');
             $table->float('estimated_price');
-            $table->string('severity_level');
+            $table->enum('severity_level', ['low', 'medium', 'high'])->default('low');
             $table->text('notes');
             $table->unsignedBigInteger('session_id');
             $table->dateTime('updated_at');

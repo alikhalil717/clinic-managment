@@ -15,7 +15,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->string('status');
+            $table->enum('status', ['pending', 'confirmed', 'canceled', 'ongoing', 'finished', 'rejected'])->default('pending');
             $table->text('notes');
 
             $table->foreign('patient_id')->references('patient_id')->on('patient')->cascadeOnDelete();

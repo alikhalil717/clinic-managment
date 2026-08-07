@@ -21,7 +21,7 @@ class TreatmentStageFactory extends Factory
             'description' => fake()->sentence(),
             'estimated_cost' => fake()->randomFloat(2, 50, 2500),
             'actual_cost' => fake()->randomFloat(2, 50, 2500),
-            'status' => fake()->randomElement(['Upcoming', 'In-Progress', 'Completed']),
+            'status' => fake()->randomElement(['upcoming', 'in_progress', 'completed']),
             'start_date' => fake()->date(),
             'end_date' => fake()->date(),
         ];

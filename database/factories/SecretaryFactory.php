@@ -17,9 +17,9 @@ class SecretaryFactory extends Factory
     {
         return [
             'secretary_id' => User::factory()->state([
-                'role' => 'Secretary',
+                'role' => 'secretary',
             ]),
-            'shift' => fake()->randomElement(['Morning', 'Evening', 'Night']),
+            'shift' => fake()->randomElement(['morning', 'evening', 'night']),
             'office_number' => fake()->bothify('OFF-###'),
         ];
     }

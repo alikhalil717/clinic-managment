@@ -8,11 +8,15 @@ const getStatusBadge = (status) => {
   switch (status?.toLowerCase()) {
     case "confirmed":
     case "completed":
+    case "finished":
       return "status-confirmed";
     case "pending":
       return "status-pending";
+    case "ongoing":
+      return "status-active";
     case "cancelled":
     case "canceled":
+    case "rejected":
       return "status-canceled";
     default:
       return "";
