@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\AdminTreatmentPlanController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PatientAppointmentController;
 use App\Http\Controllers\Api\PatientTreatmentPlanController;
+use App\Http\Controllers\Api\PatientVerificationController;
 use App\Http\Controllers\Api\DoctorAppointmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -124,7 +125,7 @@ Route::prefix('admin')->group(function (): void {
 
 
 
-//! Dashboard & Doctors
+//!  patient & Doctors
 Route::get('/doctors', [PatientDashboardController::class, 'allDoctors']);
 
 //! Appointment booking & availability
@@ -135,6 +136,11 @@ Route::prefix('appointments')->group(function (): void {
 });
 Route::get('/doctors/{id}/availability', [AppointmentController::class, 'doctorAvailability']);
 Route::get('/doctors/{id}/busy', [AppointmentController::class, 'doctorBusySlots']);
+
+//! Doctor verifies a patient's profile (medical record + allergies)
+//! after their first (diagnostic) appointment.
+Route::post('/doctor/patients/{patient}/verify', [PatientVerificationController::class, 'verify'])
+    ->middleware('doctor.bearer:Doctor');
 
 //! patient appointments
 //TODO:  make the controller for patient appointments with Request and  service and resource

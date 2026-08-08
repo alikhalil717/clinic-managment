@@ -77,6 +77,21 @@ class AppointmentBookingService
         Patient::query()->findOrFail($data['patient_id']);
         $doctor = Doctor::with('user')->findOrFail($data['doctor_id']);
 
+        // A patient's first appointment must be a diagnostic one, so the
+        // doctor can verify their profile (medical record + allergies)
+        // before they can book a normal (treatment) appointment.
+        $hasPriorAppointment = Appointment::query()
+            ->where('patient_id', $data['patient_id'])
+            ->whereNotIn('status', ['canceled', 'rejected'])
+            ->exists();
+
+        if (! $hasPriorAppointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You must book a diagnostic appointment first so the doctor can verify your profile.',
+            ], 422);
+        }
+
         $date = $data['date'];
         $time = $data['time'];
 
