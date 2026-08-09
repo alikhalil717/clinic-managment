@@ -11,10 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class PatientDashboardService
 {
-    /**
-     * Get patient dashboard data: upcoming appointment, reward points,
-     * treatment progress, and doctors list.
-     */
+
     public function dashboard(int $patientId): JsonResponse
     {
         Patient::query()->findOrFail($patientId);
@@ -146,7 +143,7 @@ class PatientDashboardService
             ->avg('progress_percentage') ?? 0;
     }
 
-   
+
     private function getAllDoctorsData(): array
     {
         return Doctor::with('user')

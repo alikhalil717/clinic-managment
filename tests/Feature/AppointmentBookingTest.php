@@ -113,6 +113,51 @@ class AppointmentBookingTest extends TestCase
             ->assertJsonPath('busy_slots', ['09:00']);
     }
 
+    public function test_doctor_busy_slots_expand_long_appointments(): void
+    {
+        // 09:30–10:30 spans two 30-minute slots: 09:30 and 10:00
+        Appointment::create([
+            'patient_id' => $this->patient->patient_id,
+            'doctor_id' => $this->doctor->doctor_id,
+            'date' => '2026-08-08',
+            'start_time' => '09:30:00',
+            'end_time' => '10:30:00',
+            'status' => 'confirmed',
+            'appointment_type' => 'normal',
+            'notes' => 'long appointment',
+        ]);
+
+        $response = $this->getJson("/api/doctors/{$this->doctor->doctor_id}/busy?date=2026-08-08");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('busy_slots', ['09:30', '10:00']);
+    }
+
+    public function test_create_normal_rejects_slot_overlapping_busy_appointment(): void
+    {
+        // 09:30–10:30 blocks both 09:30 and 10:00
+        Appointment::create([
+            'patient_id' => $this->patient->patient_id,
+            'doctor_id' => $this->doctor->doctor_id,
+            'date' => '2026-08-08',
+            'start_time' => '09:30:00',
+            'end_time' => '10:30:00',
+            'status' => 'confirmed',
+            'appointment_type' => 'normal',
+            'notes' => 'long appointment',
+        ]);
+
+        $response = $this->postJson('/api/appointments/normal', [
+            'patient_id' => $this->patient->patient_id,
+            'doctor_id' => $this->doctor->doctor_id,
+            'date' => '2026-08-08',
+            'time' => '10:00', // overlaps the existing 09:30–10:30 appointment
+        ]);
+
+        $response->assertStatus(409);
+    }
+
     public function test_create_diagnostic_appointment(): void
     {
         $response = $this->postJson('/api/appointments/diagnostic', [

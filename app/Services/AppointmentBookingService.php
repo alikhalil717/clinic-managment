@@ -157,8 +157,10 @@ class AppointmentBookingService
             ->whereDate('date', $date)
             ->where('appointment_type', 'diagnostic')
             ->whereNotIn('status', ['canceled', 'rejected'])
-            ->pluck('start_time')
-            ->map(fn($t) => substr($t, 0, 5))
+            ->get()
+            ->flatMap(fn($appointment) => $this->busySlotsForAppointment($appointment))
+            ->unique()
+            ->sort()
             ->values()
             ->toArray();
 
@@ -180,8 +182,10 @@ class AppointmentBookingService
             ->where('doctor_id', $doctorId)
             ->whereDate('date', $date)
             ->whereNotIn('status', ['canceled', 'rejected'])
-            ->pluck('start_time')
-            ->map(fn($t) => substr($t, 0, 5))
+            ->get()
+            ->flatMap(fn($appointment) => $this->busySlotsForAppointment($appointment))
+            ->unique()
+            ->sort()
             ->values()
             ->toArray();
 
@@ -221,8 +225,8 @@ class AppointmentBookingService
             $date = $cursor->toDateString();
 
             $busySlots = ($busyByDate[$date] ?? collect())
-                ->pluck('start_time')
-                ->map(fn($t) => substr($t, 0, 5))
+                ->flatMap(fn($appointment) => $this->busySlotsForAppointment($appointment))
+                ->unique()
                 ->sort()
                 ->values()
                 ->toArray();
@@ -262,17 +266,40 @@ class AppointmentBookingService
     }
 
     /**
-     * Check whether a slot is busy.
+     * Expand an appointment into the 30-minute slot start times it occupies,
+     * so a 09:30–10:30 appointment marks both 09:30 and 10:00 as busy.
+     *
+     * @return string[] e.g. ["09:30", "10:00"]
+     */
+    private function busySlotsForAppointment(Appointment $appointment): array
+    {
+        $start = Carbon::createFromFormat('H:i:s', $appointment->start_time);
+        $end = Carbon::createFromFormat('H:i:s', $appointment->end_time);
+
+        $slots = [];
+
+        while ($start->lt($end)) {
+            $slots[] = $start->format('H:i');
+            $start->addMinutes(self::SLOT_MINUTES);
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Check whether a slot is busy (overlaps any appointment's time range) (overlaps any appointment's time range).
      *
      * @param int|null $doctorId null = diagnostic (clinic-wide)
      */
     private function isSlotBusy(?int $doctorId, string $date, string $time): bool
     {
         $start = $time . ':00';
+        $end = $this->addMinutes($time, self::SLOT_MINUTES);
 
         $query = Appointment::query()
             ->whereDate('date', $date)
-            ->where('start_time', $start)
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start)
             ->whereNotIn('status', ['canceled', 'rejected']);
 
         if ($doctorId !== null) {
