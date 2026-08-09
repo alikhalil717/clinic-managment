@@ -146,16 +146,16 @@ class PatientDashboardService
             ->avg('progress_percentage') ?? 0;
     }
 
-    /**
-     * Get all doctors formatted for the dashboard.
-     */
+   
     private function getAllDoctorsData(): array
     {
         return Doctor::with('user')
             ->get()
             ->map(function ($doctor) {
                 return [
+                    'id' => $doctor->doctor_id,
                     'name' => 'Dr. ' . $doctor->user->first_name . ' ' . $doctor->user->last_name,
+                    'phone' => $doctor->user->phone,
                     'specialty' => $doctor->specialization,
                     'experience' => $doctor->years_of_experience . '+ Years',
                     'working_days' => $doctor->working_days,
