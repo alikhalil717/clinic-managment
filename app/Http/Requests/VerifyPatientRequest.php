@@ -34,6 +34,15 @@ class VerifyPatientRequest extends FormRequest
             'diagnoses.*.description' => ['nullable', 'string'],
             'diagnoses.*.severity' => ['nullable', 'string', 'in:low,medium,high'],
             'diagnoses.*.diagnosed_at' => ['nullable', 'date'],
+
+            // Current medications (prescribed to the patient)
+            'medications' => ['nullable', 'array'],
+            'medications.*.medication_id' => ['required_with:medications', 'integer', 'exists:medication,medication_id'],
+            'medications.*.dosage' => ['nullable', 'string', 'max:255'],
+            'medications.*.frequency' => ['nullable', 'string', 'max:255'],
+            'medications.*.start_date' => ['nullable', 'date'],
+            'medications.*.end_date' => ['nullable', 'date', 'after_or_equal:medications.*.start_date'],
+            'medications.*.notes' => ['nullable', 'string'],
         ];
     }
 

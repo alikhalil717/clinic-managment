@@ -8,11 +8,14 @@ use App\Models\Appointment;
 use App\Models\CaseModel;
 use App\Models\Diagnosis;
 use App\Models\Doctor;
+use App\Models\DoctorNote;
 use App\Models\DoctorPayout;
 use App\Models\MedicalHistory;
 use App\Models\MedicalRecord;
+use App\Models\Medication;
 use App\Models\Notification;
 use App\Models\Patient;
+use App\Models\PatientMedication;
 use App\Models\PatientPoints;
 use App\Models\Payment;
 use App\Models\Rating;
@@ -390,6 +393,85 @@ class DatabaseSeeder extends Seeder
             'session_id' => $session1->session_id,
             'diagnosis_name' => 'Dental Caries',
             'severity' => 'low',
+        ]);
+
+        // --- Medication catalog ---
+        $amoxicillin = Medication::factory()->create([
+            'name' => 'Amoxicillin',
+            'category' => 'antibiotic',
+            'dosage_form' => 'capsule',
+            'description' => 'Broad-spectrum antibiotic for dental infections.',
+            'side_effects' => 'Nausea, diarrhea, rash.',
+        ]);
+        $ibuprofen = Medication::factory()->create([
+            'name' => 'Ibuprofen',
+            'category' => 'analgesic',
+            'dosage_form' => 'tablet',
+            'description' => 'Pain relief and anti-inflammatory.',
+            'side_effects' => 'Stomach upset, dizziness.',
+        ]);
+        Medication::factory()->create([
+            'name' => 'Paracetamol',
+            'category' => 'analgesic',
+            'dosage_form' => 'tablet',
+            'description' => 'Mild pain relief and fever reduction.',
+            'side_effects' => 'Liver damage at high doses.',
+        ]);
+        Medication::factory()->create([
+            'name' => 'Metronidazole',
+            'category' => 'antibiotic',
+            'dosage_form' => 'tablet',
+            'description' => 'Antibiotic for anaerobic infections.',
+            'side_effects' => 'Metallic taste, nausea.',
+        ]);
+        Medication::factory()->create([
+            'name' => 'Chlorhexidine',
+            'category' => 'antiseptic',
+            'dosage_form' => 'mouthwash',
+            'description' => 'Antiseptic mouthwash for oral hygiene.',
+            'side_effects' => 'Temporary staining of teeth.',
+        ]);
+
+        // --- Patient current medications ---
+        PatientMedication::factory()->create([
+            'record_id' => $testRecord->record_id,
+            'medication_id' => $amoxicillin->medication_id,
+            'dosage' => '500mg',
+            'frequency' => 'three times daily',
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(7)->toDateString(),
+            'prescribed_by' => $doctor1->doctor_id,
+            'notes' => 'Take after meals.',
+            'is_current' => true,
+        ]);
+        PatientMedication::factory()->create([
+            'record_id' => $testRecord->record_id,
+            'medication_id' => $ibuprofen->medication_id,
+            'dosage' => '400mg',
+            'frequency' => 'every 6 hours',
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(3)->toDateString(),
+            'prescribed_by' => $doctor1->doctor_id,
+            'notes' => 'For pain after braces adjustment.',
+            'is_current' => true,
+        ]);
+
+        // --- Doctor notes ---
+        DoctorNote::factory()->create([
+            'record_id' => $testRecord->record_id,
+            'doctor_id' => $doctor1->doctor_id,
+            'title' => 'Initial consultation',
+            'note' => 'Patient presents with mild crowding. Recommended braces treatment. Patient informed of cost and duration.',
+            'note_type' => 'general',
+            'created_at' => now()->subDays(10),
+        ]);
+        DoctorNote::factory()->create([
+            'record_id' => $testRecord->record_id,
+            'doctor_id' => $doctor2->doctor_id,
+            'title' => 'Root canal follow-up',
+            'note' => 'Patient reported sensitivity after root canal. Advised to return in 2 weeks if pain persists.',
+            'note_type' => 'follow_up',
+            'created_at' => now()->subDays(3),
         ]);
 
         $this->command->info('');

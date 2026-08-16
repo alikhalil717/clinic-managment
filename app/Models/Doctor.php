@@ -100,4 +100,20 @@ class Doctor extends ClinicModel
     {
         return $this->hasMany(Diagnosis::class, 'doctor_id', 'doctor_id');
     }
+
+    /**
+     * Medications prescribed by this doctor to patients.
+     */
+    public function prescribedMedications(): HasMany
+    {
+        return $this->hasMany(PatientMedication::class, 'prescribed_by', 'doctor_id');
+    }
+
+    /**
+     * Notes written by this doctor on patients' medical records.
+     */
+    public function doctorNotes(): HasMany
+    {
+        return $this->hasMany(DoctorNote::class, 'doctor_id', 'doctor_id');
+    }
 }

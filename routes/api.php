@@ -17,6 +17,11 @@ use App\Http\Controllers\Api\PatientAppointmentController;
 use App\Http\Controllers\Api\PatientTreatmentPlanController;
 use App\Http\Controllers\Api\PatientVerificationController;
 use App\Http\Controllers\Api\DoctorAppointmentController;
+use App\Http\Controllers\Api\DoctorDashboardController;
+use App\Http\Controllers\Api\DoctorPatientController;
+use App\Http\Controllers\Api\MedicationController;
+use App\Http\Controllers\Api\PatientMedicationController;
+use App\Http\Controllers\Api\DoctorNoteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +66,10 @@ Route::prefix('doctor')->group(function (): void {
     Route::post('/update-profile', [DoctorAuthController::class, 'updateProfile'])
         ->middleware('doctor.bearer:Doctor');
     Route::post('/cases/{case}/finish', [CaseController::class, 'finish'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::get('/dashboard', [DoctorDashboardController::class, 'dashboard'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::get('/patients', [DoctorPatientController::class, 'index'])
         ->middleware('doctor.bearer:Doctor');
 });
 
@@ -173,5 +182,43 @@ Route::prefix('doctor/appointments')->group(function (): void {
     Route::get('/upcoming', [DoctorAppointmentController::class, 'showDoctorUpcomingAppointments'])
         ->middleware('doctor.bearer:Doctor');
     Route::get('/{appointment}', [DoctorAppointmentController::class, 'showDoctorAppointmentDetails'])
+        ->middleware('doctor.bearer:Doctor');
+});
+
+//! Medication catalog (admin manages, everyone reads)
+Route::prefix('medications')->group(function (): void {
+    Route::get('/', [MedicationController::class, 'index']);
+    Route::get('/{medication}', [MedicationController::class, 'show']);
+    Route::post('/', [MedicationController::class, 'store'])
+        ->middleware('admin.bearer:Admin');
+    Route::put('/{medication}', [MedicationController::class, 'update'])
+        ->middleware('admin.bearer:Admin');
+    Route::delete('/{medication}', [MedicationController::class, 'destroy'])
+        ->middleware('admin.bearer:Admin');
+});
+
+//! Patient current medications (doctor prescribes, patient reads)
+Route::prefix('patients/{patient}/medications')->group(function (): void {
+    Route::get('/', [PatientMedicationController::class, 'index'])
+        ->middleware('doctor.bearer:Doctor,Patient');
+    Route::get('/current', [PatientMedicationController::class, 'current'])
+        ->middleware('doctor.bearer:Doctor,Patient');
+    Route::post('/', [PatientMedicationController::class, 'store'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::put('/{patientMedication}', [PatientMedicationController::class, 'update'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::delete('/{patientMedication}', [PatientMedicationController::class, 'destroy'])
+        ->middleware('doctor.bearer:Doctor');
+});
+
+//! Doctor notes (doctors write notes on a patient's medical record)
+Route::prefix('patients/{patient}/notes')->group(function (): void {
+    Route::get('/', [DoctorNoteController::class, 'index'])
+        ->middleware('doctor.bearer:Doctor,Patient');
+    Route::post('/', [DoctorNoteController::class, 'store'])
+        ->middleware('doctor.bearer:Doctor');
+    Route::get('/{note}', [DoctorNoteController::class, 'show'])
+        ->middleware('doctor.bearer:Doctor,Patient');
+    Route::delete('/{note}', [DoctorNoteController::class, 'destroy'])
         ->middleware('doctor.bearer:Doctor');
 });

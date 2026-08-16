@@ -30,4 +30,20 @@ class MedicalRecord extends ClinicModel
     {
         return $this->hasMany(Diagnosis::class, 'record_id', 'record_id');
     }
+
+    /**
+     * Medications currently prescribed to the patient.
+     */
+    public function medications(): HasMany
+    {
+        return $this->hasMany(PatientMedication::class, 'record_id', 'record_id');
+    }
+
+    /**
+     * Notes written by doctors on the patient's record.
+     */
+    public function doctorNotes(): HasMany
+    {
+        return $this->hasMany(DoctorNote::class, 'record_id', 'record_id');
+    }
 }

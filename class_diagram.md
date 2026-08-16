@@ -227,6 +227,45 @@ classDiagram
         + session() : BelongsTo~TreatmentSession~
     }
 
+    class Medication {
+        - medication_id : int
+        - name : string
+        - category : string
+        - dosage_form : string
+        - description : string
+        - side_effects : string
+        - is_active : boolean
+        + patientMedications() : HasMany~PatientMedication~
+    }
+
+    class PatientMedication {
+        - patient_medication_id : int
+        - record_id : int
+        - medication_id : int
+        - dosage : string
+        - frequency : string
+        - start_date : date
+        - end_date : date
+        - prescribed_by : int
+        - notes : string
+        - is_current : boolean
+        + record() : BelongsTo~MedicalRecord~
+        + medication() : BelongsTo~Medication~
+        + prescribedBy() : BelongsTo~Doctor~
+    }
+
+    class DoctorNote {
+        - note_id : int
+        - record_id : int
+        - doctor_id : int
+        - title : string
+        - note : string
+        - note_type : string
+        - created_at : DateTime
+        + record() : BelongsTo~MedicalRecord~
+        + doctor() : BelongsTo~Doctor~
+    }
+
     %% ====================================================================
     %%  FINANCIAL CLASSES
     %% ====================================================================
@@ -438,6 +477,12 @@ classDiagram
     Doctor "1" --> "0..*" Diagnosis : makes
     Diagnosis "*" --> "1" Doctor : made by
 
+    Doctor "1" --> "0..*" PatientMedication : prescribes
+    PatientMedication "*" --> "1" Doctor : prescribed by
+
+    Doctor "1" --> "0..*" DoctorNote : writes
+    DoctorNote "*" --> "1" Doctor : written by
+
     %% ====================================================================
     %%  APPOINTMENT → TREATMENT SESSION
     %% ====================================================================
@@ -474,6 +519,14 @@ classDiagram
     MedicalRecord "1" *-- "0..*" MedicalHistory : contains
     MedicalRecord "1" *-- "0..*" Allergy : contains
     MedicalRecord "1" *-- "0..*" Diagnosis : contains
+    MedicalRecord "1" *-- "0..*" PatientMedication : has
+    MedicalRecord "1" *-- "0..*" DoctorNote : has
+
+    %% ====================================================================
+    %%  MEDICATION RELATIONSHIPS
+    %% ====================================================================
+    Medication "1" --> "0..*" PatientMedication : prescribed as
+    PatientMedication "*" --> "1" Medication : refers to
 
     %% ====================================================================
     %%  CONTROLLER → SERVICE (dependency)

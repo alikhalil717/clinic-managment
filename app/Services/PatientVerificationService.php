@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Http\Requests\VerifyPatientRequest;
 use App\Models\Allergy;
 use App\Models\Diagnosis;
+use App\Models\DoctorNote;
 use App\Models\MedicalHistory;
 use App\Models\MedicalRecord;
 use App\Models\Patient;
+use App\Models\PatientMedication;
 use Illuminate\Http\JsonResponse;
 
 class PatientVerificationService
@@ -64,6 +66,21 @@ class PatientVerificationService
             ]);
         }
 
+        // Current medications
+        foreach ($request->validated('medications') ?? [] as $medication) {
+            PatientMedication::create([
+                'record_id' => $record->record_id,
+                'medication_id' => $medication['medication_id'],
+                'dosage' => $medication['dosage'] ?? null,
+                'frequency' => $medication['frequency'] ?? null,
+                'start_date' => $medication['start_date'] ?? null,
+                'end_date' => $medication['end_date'] ?? null,
+                'prescribed_by' => $doctorId,
+                'notes' => $medication['notes'] ?? null,
+                'is_current' => true,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Patient profile verified and medical record completed.',
@@ -72,6 +89,8 @@ class PatientVerificationService
                 'allergies' => $record->allergies,
                 'medical_histories' => $record->histories,
                 'diagnoses' => $record->diagnoses,
+                'medications' => $record->medications,
+                'doctor_notes' => $record->doctorNotes,
             ],
         ], 201);
     }
