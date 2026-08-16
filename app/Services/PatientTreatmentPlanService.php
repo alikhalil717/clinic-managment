@@ -124,7 +124,7 @@ class PatientTreatmentPlanService
         return [
             'case_id' => $plan->case->case_id,
             'title' => $plan->case->title,
-            'description' => $plan->case->description,
+            'description' => $plan->case->description ?? null,
             'patient_age' => $plan->case->patient_age,
             'before_photo' => $plan->case->before_photo
                 ? asset('storage/' . $plan->case->before_photo)

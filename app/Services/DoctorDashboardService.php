@@ -87,7 +87,7 @@ class DoctorDashboardService
             'treatment' => $appointment->notes ?? ($appointment->doctor?->specialization ?? 'Appointment'),
             'time' => date('h:i A', strtotime($appointment->start_time)),
             'date' => $appointment->date,
-            'room' => '',
+            'room' => $appointment->room ?? '',
         ];
     }
 

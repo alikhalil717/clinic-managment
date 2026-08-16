@@ -117,6 +117,7 @@ class PatientAppointmentService
             'doctor_id' => $appointment->doctor_id,
             'specialty' => $appointment->doctor?->specialization,
             'location' => 'DentaPrint',
+            'room' => $appointment->room ?? '',
         ];
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CaseController;
+use App\Http\Controllers\Api\MedicalHistoryController;
 use App\Http\Controllers\Api\DoctorAuthController;
 use App\Http\Controllers\Api\DoctorProfileController;
 use App\Http\Controllers\Api\PatientAuthController;
@@ -53,6 +54,10 @@ Route::prefix('patient')->group(function (): void {
     Route::get('/{id}/points', [PatientDashboardController::class, 'points'])
         ->middleware('patient.bearer:Patient');
     Route::get('/{id}/progress', [PatientDashboardController::class, 'progress'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/medical-history', [MedicalHistoryController::class, 'index'])
+        ->middleware('patient.bearer:Patient');
+    Route::put('/medical-history', [MedicalHistoryController::class, 'update'])
         ->middleware('patient.bearer:Patient');
 });
 //! Doctor
