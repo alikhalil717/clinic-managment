@@ -88,6 +88,12 @@ class DoctorDashboardService
             'time' => date('h:i A', strtotime($appointment->start_time)),
             'date' => $appointment->date,
             'room' => $appointment->room ?? '',
+            // Plan linkage (Phase D): lets the doctor Start-Session flow route
+            // into the treatment-plan details screen when the appointment
+            // belongs to a plan/stage (NULL/NULL = standalone).
+            'appointment_type' => $appointment->appointment_type ?? 'normal',
+            'treatment_plan_id' => $appointment->treatment_plan_id,
+            'treatment_stage_id' => $appointment->treatment_stage_id,
         ];
     }
 

@@ -71,25 +71,50 @@ class AppointmentBookingService
 
     /**
      * Create a normal (doctor) appointment.
+     *
+     * When the booking belongs to a treatment-plan stage, `treatment_plan_id`
+     * and `treatment_stage_id` are stored and the "diagnostic-first" gate is
+     * skipped (the plan itself is the clinical context). Standalone bookings
+     * (no stage) still require a prior diagnostic so the doctor can verify
+     * the patient's profile.
      */
     public function createNormal(array $data): JsonResponse
     {
         Patient::query()->findOrFail($data['patient_id']);
         $doctor = Doctor::with('user')->findOrFail($data['doctor_id']);
 
-        // A patient's first appointment must be a diagnostic one, so the
-        // doctor can verify their profile (medical record + allergies)
-        // before they can book a normal (treatment) appointment.
-        $hasPriorAppointment = Appointment::query()
-            ->where('patient_id', $data['patient_id'])
-            ->whereNotIn('status', ['canceled', 'rejected'])
-            ->exists();
+        $planId = $data['treatment_plan_id'] ?? null;
+        $stageId = $data['treatment_stage_id'] ?? null;
 
-        if (! $hasPriorAppointment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You must book a diagnostic appointment first so the doctor can verify your profile.',
-            ], 422);
+        if ($stageId !== null) {
+            // Stage-scoped booking: stage must belong to the given plan.
+            $stage = DB::table('treatment_stage')
+                ->where('stage_id', $stageId)
+                ->where('plan_id', $planId)
+                ->first();
+
+            if (! $stage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The stage does not belong to the given treatment plan.',
+                ], 422);
+            }
+        } else {
+            // Standalone booking: a patient's first appointment must be a
+            // diagnostic one, so the doctor can verify their profile
+            // (medical record + allergies) before they can book a normal
+            // (treatment) appointment.
+            $hasPriorAppointment = Appointment::query()
+                ->where('patient_id', $data['patient_id'])
+                ->whereNotIn('status', ['canceled', 'rejected'])
+                ->exists();
+
+            if (! $hasPriorAppointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must book a diagnostic appointment first so the doctor can verify your profile.',
+                ], 422);
+            }
         }
 
         $date = $data['date'];
@@ -125,12 +150,14 @@ class AppointmentBookingService
         $appointment = Appointment::create([
             'patient_id' => $data['patient_id'],
             'doctor_id' => $doctor->doctor_id,
+            'treatment_plan_id' => $planId,
+            'treatment_stage_id' => $stageId,
             'date' => $date,
             'start_time' => $time . ':00',
             'end_time' => $this->addMinutes($time, self::SLOT_MINUTES),
             'status' => 'pending',
             'appointment_type' => 'normal',
-            'notes' => 'Normal appointment',
+            'notes' => $data['notes'] ?? 'Normal appointment',
         ]);
 
         return response()->json([

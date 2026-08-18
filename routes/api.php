@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CaseController;
+use App\Http\Controllers\Api\DentalChartController;
 use App\Http\Controllers\Api\MedicalHistoryController;
 use App\Http\Controllers\Api\DoctorAuthController;
 use App\Http\Controllers\Api\DoctorProfileController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Api\PatientVerificationController;
 use App\Http\Controllers\Api\DoctorAppointmentController;
 use App\Http\Controllers\Api\DoctorDashboardController;
 use App\Http\Controllers\Api\DoctorPatientController;
+use App\Http\Controllers\Api\DoctorTreatmentPlanController;
 use App\Http\Controllers\Api\MedicationController;
 use App\Http\Controllers\Api\PatientMedicationController;
 use App\Http\Controllers\Api\DoctorNoteController;
@@ -58,6 +60,8 @@ Route::prefix('patient')->group(function (): void {
     Route::get('/medical-history', [MedicalHistoryController::class, 'index'])
         ->middleware('patient.bearer:Patient');
     Route::put('/medical-history', [MedicalHistoryController::class, 'update'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/dental-chart', [DentalChartController::class, 'index'])
         ->middleware('patient.bearer:Patient');
 });
 //! Doctor
@@ -157,7 +161,6 @@ Route::post('/doctor/patients/{patient}/verify', [PatientVerificationController:
     ->middleware('doctor.bearer:Doctor');
 
 //! patient appointments
-//TODO:  make the controller for patient appointments with Request and  service and resource
 Route::prefix('patient/appointments')->group(function (): void {
 
     Route::post('/add', [PatientAppointmentController::class, 'addAppointment'])
@@ -172,7 +175,6 @@ Route::prefix('patient/appointments')->group(function (): void {
         ->middleware('patient.bearer:Patient');
 });
 //! patient Tretment plan
-//!TODO:  make the controller for patient treatment plan with Request and  service and resource
 Route::prefix('patient/treatment-plan')->group(function (): void {
     Route::get('/', [PatientTreatmentPlanController::class, 'showTreatmentPlans'])
         ->middleware('patient.bearer:Patient');
@@ -180,7 +182,6 @@ Route::prefix('patient/treatment-plan')->group(function (): void {
         ->middleware('patient.bearer:Patient');
 });
 //! doctor appointments
-//!TODO:  make the controller for doctor appointments with Request and  service and resource
 Route::prefix('doctor/appointments')->group(function (): void {
     Route::get('/', [DoctorAppointmentController::class, 'showDoctorAppointments'])
         ->middleware('doctor.bearer:Doctor');
@@ -188,6 +189,17 @@ Route::prefix('doctor/appointments')->group(function (): void {
         ->middleware('doctor.bearer:Doctor');
     Route::get('/{appointment}', [DoctorAppointmentController::class, 'showDoctorAppointmentDetails'])
         ->middleware('doctor.bearer:Doctor');
+});
+
+//! Doctor treatment-plan management (Phase B)
+Route::prefix('doctor')->middleware('doctor.bearer:Doctor')->group(function (): void {
+    Route::get('/patients/{patient}/treatment-plans', [DoctorTreatmentPlanController::class, 'index']);
+    Route::get('/treatment-plans/{plan}', [DoctorTreatmentPlanController::class, 'show']);
+    Route::post('/treatment-plans', [DoctorTreatmentPlanController::class, 'store']);
+    Route::post('/treatment-plans/{plan}/stages', [DoctorTreatmentPlanController::class, 'storeStage']);
+    Route::post('/treatment-plans/{plan}/stages/{stage}/appointments', [DoctorTreatmentPlanController::class, 'storeStageAppointment']);
+    Route::get('/treatment-plans/{plan}/dental-chart', [DoctorTreatmentPlanController::class, 'chart']);
+    Route::put('/treatment-plans/{plan}/dental-chart/teeth/{tooth}', [DoctorTreatmentPlanController::class, 'updateChartTooth']);
 });
 
 //! Medication catalog (admin manages, everyone reads)

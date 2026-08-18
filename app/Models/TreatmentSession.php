@@ -16,6 +16,11 @@ class TreatmentSession extends ClinicModel
         return $this->belongsTo(Appointment::class, 'appointment_id', 'appointment_id');
     }
 
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(TreatmentPlan::class, 'plan_id', 'plan_id');
+    }
+
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id', 'doctor_id');

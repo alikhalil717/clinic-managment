@@ -14,6 +14,8 @@ class Appointment extends ClinicModel
     protected $fillable = [
         'patient_id',
         'doctor_id',
+        'treatment_plan_id',
+        'treatment_stage_id',
         'date',
         'start_time',
         'end_time',
@@ -30,6 +32,16 @@ class Appointment extends ClinicModel
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id', 'doctor_id');
+    }
+
+    public function treatmentPlan(): BelongsTo
+    {
+        return $this->belongsTo(TreatmentPlan::class, 'treatment_plan_id', 'plan_id');
+    }
+
+    public function treatmentStage(): BelongsTo
+    {
+        return $this->belongsTo(TreatmentStage::class, 'treatment_stage_id', 'stage_id');
     }
 
     public function treatmentSessions(): HasMany

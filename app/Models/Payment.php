@@ -19,4 +19,9 @@ class Payment extends ClinicModel
     {
         return $this->belongsTo(TreatmentSession::class, 'related_session_id', 'session_id');
     }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(TreatmentPlan::class, 'plan_id', 'plan_id');
+    }
 }

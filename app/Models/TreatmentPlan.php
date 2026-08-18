@@ -31,4 +31,9 @@ class TreatmentPlan extends ClinicModel
     {
         return $this->hasOne(CaseModel::class, 'treatment_plan_id', 'plan_id');
     }
+
+    public function dentalChart(): HasOne
+    {
+        return $this->hasOne(DentalChart::class, 'plan_id', 'plan_id');
+    }
 }

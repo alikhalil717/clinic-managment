@@ -20,6 +20,9 @@ class StoreNormalAppointmentRequest extends FormRequest
             'doctor_id' => ['required', 'integer', 'exists:doctor,doctor_id'],
             'date' => ['required', 'date', 'after_or_equal:today'],
             'time' => ['required', 'date_format:H:i'],
+            'treatment_plan_id' => ['nullable', 'integer', 'exists:treatment_plan,plan_id'],
+            'treatment_stage_id' => ['nullable', 'integer', 'exists:treatment_stage,stage_id'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 

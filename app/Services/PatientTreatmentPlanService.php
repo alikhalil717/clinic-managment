@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Tooth;
 use App\Models\TreatmentPlan;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +34,7 @@ class PatientTreatmentPlanService
     {
         $plan = TreatmentPlan::query()
             ->where('patient_id', $user->user_id)
-            ->with(['doctor.user', 'case', 'stages'])
+            ->with(['doctor.user', 'case', 'stages.appointments.doctor.user', 'dentalChart.teeth.tooth'])
             ->findOrFail($planId);
 
         return response()->json([
@@ -111,7 +112,72 @@ class PatientTreatmentPlanService
                 'actual_cost' => $stage->actual_cost,
                 'start_date' => $stage->start_date,
                 'end_date' => $stage->end_date,
+                'appointments' => $stage->appointments->map(fn($appointment) => [
+                    'appointment_id' => $appointment->appointment_id,
+                    'title' => $appointment->notes ?: ($appointment->doctor?->specialization ?? 'Appointment'),
+                    'date' => $appointment->date,
+                    'time' => date('h:i A', strtotime($appointment->start_time)),
+                    'status' => $appointment->status,
+                    'appointment_type' => $appointment->appointment_type ?? 'normal',
+                    'doctor' => $appointment->doctor?->user
+                        ? trim(($appointment->doctor->user->first_name ?? '') . ' ' . ($appointment->doctor->user->last_name ?? ''))
+                        : null,
+                    'doctor_id' => $appointment->doctor_id,
+                    'room' => $appointment->room ?? '',
+                ]),
             ]),
+            'dental_chart' => $this->dentalChartSummary($plan),
+        ];
+    }
+
+    /**
+     * Maps the DB condition_status enum to the display labels the Flutter
+     * patient dental chart renders (see PatientDentalChartScreen.statusColors).
+     * Mirrors DentalChartService::STATUS_MAP so plan charts pair with the UI.
+     */
+    private const STATUS_MAP = [
+        'healthy' => 'Healthy',
+        'decay' => 'Caries',
+        'damaged' => 'Filled',
+        'treated' => 'Root Canal',
+        'missing' => 'Missing',
+    ];
+
+    private function dentalChartSummary(TreatmentPlan $plan): ?array
+    {
+        $chart = $plan->dentalChart;
+
+        if (! $chart) {
+            return null;
+        }
+
+        // Build a lookup of the charted teeth keyed by tooth_id.
+        $charted = $chart->teeth->keyBy('tooth_id');
+
+        // Return ALL FDI catalog teeth (52), overlaying the charted ones so
+        // the patient chart never shows empty/null teeth for a charted plan.
+        $teeth = Tooth::query()
+            ->orderBy('tooth_id')
+            ->get()
+            ->map(function (Tooth $tooth) use ($charted) {
+                $record = $charted->get($tooth->tooth_id);
+                $status = $record?->condition_status ?? 'healthy';
+
+                return [
+                    'iso' => $tooth->tooth_code,
+                    'tooth_id' => $tooth->tooth_id,
+                    'tooth_name' => $tooth->tooth_name,
+                    'status' => self::STATUS_MAP[$status] ?? 'Healthy',
+                    'notes' => $record?->notes,
+                    'treatment_type' => $record?->treatment_type,
+                    'severity' => $record?->severity_level,
+                    'estimated_price' => $record?->estimated_price,
+                ];
+            });
+
+        return [
+            'chart_id' => $chart->chart_id,
+            'teeth' => $teeth,
         ];
     }
 

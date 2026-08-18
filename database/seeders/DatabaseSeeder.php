@@ -6,6 +6,8 @@ use App\Models\Admin;
 use App\Models\Allergy;
 use App\Models\Appointment;
 use App\Models\CaseModel;
+use App\Models\DentalChart;
+use App\Models\DentalChartTooth;
 use App\Models\Diagnosis;
 use App\Models\Doctor;
 use App\Models\DoctorNote;
@@ -39,6 +41,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // -----------------------------------------------------------------
+        // FDI tooth catalog (52 real teeth) + demo chart conditions
+        // -----------------------------------------------------------------
+        (new ToothCatalogSeeder())->run();
+        // -----------------------------------------------------------------
         // Existing random seed data
         // -----------------------------------------------------------------
         Admin::factory()->create();
@@ -50,6 +56,7 @@ class DatabaseSeeder extends Seeder
         $appointment = Appointment::factory()->create([
             'doctor_id' => $doctor->doctor_id,
             'patient_id' => $patient->patient_id,
+            'appointment_type' => 'normal',
         ]);
 
         $session = TreatmentSession::factory()->create([
@@ -58,7 +65,7 @@ class DatabaseSeeder extends Seeder
             'patient_id' => $patient->patient_id,
         ]);
 
-        $tooth = Tooth::factory()->create();
+        $tooth = Tooth::query()->where('tooth_code', '16')->first() ?? Tooth::factory()->create();
 
         // Create a treatment plan with a single case (1-to-1)
         $plan = TreatmentPlan::factory()->create([
@@ -72,9 +79,25 @@ class DatabaseSeeder extends Seeder
 
         // Link the stage to the existing plan (otherwise the factory would
         // create a new orphan treatment plan with no case)
-        TreatmentStage::factory()->create([
+        $stage = TreatmentStage::factory()->create([
             'plan_id' => $plan->plan_id,
         ]);
+
+        // Each treatment plan owns exactly one dental chart (Phase A)
+        $chart = DentalChart::factory()->create([
+            'plan_id' => $plan->plan_id,
+            'patient_id' => $patient->patient_id,
+            'doctor_id' => $doctor->doctor_id,
+        ]);
+        $this->attachChartTeeth($chart);
+
+        // The appointment + its session belong to the plan/stage above
+        $appointment->update([
+            'treatment_plan_id' => $plan->plan_id,
+            'treatment_stage_id' => $stage->stage_id,
+        ]);
+        $session->update(['plan_id' => $plan->plan_id]);
+
         TreatmentDetails::factory()->create([
             'session_id' => $session->session_id,
             'tooth_id' => $tooth->tooth_id,
@@ -182,6 +205,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // --- Upcoming Appointments ---
+        // Standalone appointment (not part of any treatment plan)
         Appointment::factory()->create([
             'patient_id' => $testPatient->patient_id,
             'doctor_id' => $doctor1->doctor_id,
@@ -189,6 +213,7 @@ class DatabaseSeeder extends Seeder
             'start_time' => '09:00:00',
             'end_time' => '09:30:00',
             'status' => 'confirmed',
+            'appointment_type' => 'normal',
             'notes' => 'Teeth Cleaning',
         ]);
 
@@ -199,6 +224,7 @@ class DatabaseSeeder extends Seeder
             'start_time' => '14:00:00',
             'end_time' => '14:30:00',
             'status' => 'confirmed',
+            'appointment_type' => 'diagnostic',
             'notes' => 'Root Canal Checkup',
         ]);
 
@@ -212,17 +238,6 @@ class DatabaseSeeder extends Seeder
             'status' => 'finished',
             'notes' => 'Initial Consultation',
         ]);
-
-        // --- Treatment Sessions (linked to appointments) ---
-        $session1 = TreatmentSession::factory()->create([
-            'appointment_id' => $appt2->appointment_id,
-            'doctor_id' => $doctor2->doctor_id,
-            'patient_id' => $testPatient->patient_id,
-        ]);
-
-        // --- Teeth ---
-        $tooth1 = Tooth::factory()->create();
-        $tooth2 = Tooth::factory()->create();
 
         // --- Treatment Plans ---
         $plan1 = TreatmentPlan::factory()->create([
@@ -253,6 +268,47 @@ class DatabaseSeeder extends Seeder
             'patient_age' => 29,
         ]);
 
+        // --- Treatment Stages (each plan has stages) ---
+        $stage1 = TreatmentStage::factory()->create([
+            'plan_id' => $plan1->plan_id,
+        ]);
+        $stage2 = TreatmentStage::factory()->create([
+            'plan_id' => $plan2->plan_id,
+        ]);
+
+        // --- Per-plan dental charts (each treatment plan owns its chart) ---
+        $chart1 = DentalChart::factory()->create([
+            'plan_id' => $plan1->plan_id,
+            'patient_id' => $testPatient->patient_id,
+            'doctor_id' => $doctor1->doctor_id,
+        ]);
+        $chart2 = DentalChart::factory()->create([
+            'plan_id' => $plan2->plan_id,
+            'patient_id' => $testPatient->patient_id,
+            'doctor_id' => $doctor2->doctor_id,
+        ]);
+        $this->attachChartTeeth($chart1);
+        $this->attachChartTeeth($chart2);
+
+        // --- Link appointments into plan stages ---
+        // appt2 (diagnostic) becomes the kickoff appointment of plan2 stage1
+        $appt2->update([
+            'treatment_plan_id' => $plan2->plan_id,
+            'treatment_stage_id' => $stage1->stage_id,
+        ]);
+
+        // --- Treatment Sessions (linked to a plan + its appointment) ---
+        $session1 = TreatmentSession::factory()->create([
+            'appointment_id' => $appt2->appointment_id,
+            'plan_id' => $plan2->plan_id,
+            'doctor_id' => $doctor2->doctor_id,
+            'patient_id' => $testPatient->patient_id,
+        ]);
+
+        // --- Teeth (real FDI catalog) ---
+        $tooth1 = Tooth::query()->where('tooth_code', '16')->first() ?? Tooth::factory()->create();
+        $tooth2 = Tooth::query()->where('tooth_code', '26')->first() ?? Tooth::factory()->create();
+
         // --- Done Treatment Plan (completed, with a finished case) ---
         $donePlan = TreatmentPlan::factory()->create([
             'patient_id' => $testPatient->patient_id,
@@ -273,13 +329,13 @@ class DatabaseSeeder extends Seeder
             'created_at' => now()->subDays(3), // finished 3 days ago
         ]);
 
-        // --- Treatment Stages ---
-        TreatmentStage::factory()->create([
-            'plan_id' => $plan1->plan_id,
+        // Completed plans also own a dental chart
+        $doneChart = DentalChart::factory()->create([
+            'plan_id' => $donePlan->plan_id,
+            'patient_id' => $testPatient->patient_id,
+            'doctor_id' => $doctor1->doctor_id,
         ]);
-        TreatmentStage::factory()->create([
-            'plan_id' => $plan2->plan_id,
-        ]);
+        $this->attachChartTeeth($doneChart);
 
         // --- Treatment Details ---
         TreatmentDetails::factory()->create([
@@ -295,6 +351,8 @@ class DatabaseSeeder extends Seeder
         Payment::factory()->create([
             'patient_id' => $testPatient->patient_id,
             'related_session_id' => $session1->session_id,
+            'plan_id' => $plan2->plan_id,
+            'type' => 'plan_payment',
         ]);
 
         // --- Doctor Payouts ---
@@ -483,5 +541,57 @@ class DatabaseSeeder extends Seeder
         $this->command->info(" Token    : {$testUser->api_token}");
         $this->command->info('============================================');
         $this->command->info('');
+    }
+
+    /**
+     * Attach a handful of REAL FDI catalog teeth to a plan's dental chart.
+     * Uses the seeded 52-tooth catalog codes (11, 16, 26, 36, 47, ...) so the
+     * patient/doctor charts render real ISOs instead of factory random ones.
+     */
+    private function attachChartTeeth($chart): void
+    {
+        $codes = ['11', '16', '26', '36', '47'];
+
+        foreach ($codes as $code) {
+            $tooth = Tooth::query()->where('tooth_code', $code)->first();
+            if (! $tooth) {
+                continue;
+            }
+
+            DentalChartTooth::query()->updateOrCreate(
+                ['chart_id' => $chart->chart_id, 'tooth_id' => $tooth->tooth_id],
+                [
+                    'condition_status' => match ($code) {
+                        '16' => 'damaged',
+                        '26' => 'decay',
+                        '36' => 'missing',
+                        '47' => 'treated',
+                        default => 'healthy',
+                    },
+                    'treatment_type' => match ($code) {
+                        '16' => 'filling',
+                        '26' => 'root_canal',
+                        '36' => 'extraction',
+                        '47' => 'root_canal',
+                        default => 'cleaning',
+                    },
+                    'treatment_description' => 'Seeded demo condition for ' . $code,
+                    'estimated_price' => match ($code) {
+                        '16' => 250,
+                        '26' => 900,
+                        '36' => 350,
+                        '47' => 900,
+                        default => 120,
+                    },
+                    'severity_level' => match ($code) {
+                        '16', '36' => 'medium',
+                        '26' => 'high',
+                        default => 'low',
+                    },
+                    'notes' => 'Demo tooth ' . $code,
+                    'updated_at' => now(),
+                ],
+            );
+        }
     }
 }
