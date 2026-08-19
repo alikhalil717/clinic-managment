@@ -77,6 +77,7 @@ class DoctorDashboardService
         }
 
         return [
+            'appointment_id' => $appointment->appointment_id,
             'patient_id' => $appointment->patient_id,
             'patient_name' => trim(
                 ($appointment->patient?->user?->first_name ?? '') . ' ' . ($appointment->patient?->user?->last_name ?? '')

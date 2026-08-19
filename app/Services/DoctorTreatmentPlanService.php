@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\CaseModel;
 use App\Models\DentalChart;
 use App\Models\DentalChartTooth;
 use App\Models\Doctor;
@@ -12,6 +13,7 @@ use App\Models\TreatmentStage;
 use App\Models\Tooth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DoctorTreatmentPlanService
@@ -30,27 +32,72 @@ class DoctorTreatmentPlanService
             ->with(['case', 'stages'])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn(TreatmentPlan $plan) => [
-                'plan_id' => $plan->plan_id,
-                'title' => $plan->title,
-                'description' => $plan->description,
-                'estimated_total_cost' => $plan->estimated_total_cost,
-                'actual_total_cost' => $plan->actual_total_cost,
-                'progress_percentage' => $plan->progress_percentage,
-                'created_at' => $plan->created_at,
-                'case' => $plan->case ? [
-                    'case_id' => $plan->case->case_id,
-                    'title' => $plan->case->title,
-                    'before_photo' => $plan->case->before_photo,
-                    'after_photo' => $plan->case->after_photo,
-                ] : null,
-                'stages_count' => $plan->stages->count(),
-            ]);
+            ->map(fn(TreatmentPlan $plan) => $this->summary($plan));
 
         return response()->json([
             'success' => true,
             'data' => $plans,
         ]);
+    }
+
+    /**
+     * List ALL treatment plans the authenticated doctor manages (Phase E:
+     * the doctor "Plans" tab). Each entry includes the patient name so the
+     * list screen can show who the plan belongs to.
+     */
+    public function listAllForDoctor(User $user): JsonResponse
+    {
+        $doctor = Doctor::query()->findOrFail($user->user_id);
+
+        $plans = TreatmentPlan::query()
+            ->where('doctor_id', $doctor->doctor_id)
+            ->with(['patient.user', 'case', 'stages'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn(TreatmentPlan $plan) => $this->summary($plan, true));
+
+        return response()->json([
+            'success' => true,
+            'data' => $plans,
+        ]);
+    }
+
+    /**
+     * Compact shape used in plan lists. Includes Phase F status + derived
+     * stage counters so the UI can render "Stages Done / All Stages".
+     */
+    private function summary(TreatmentPlan $plan, bool $includePatient = false): array
+    {
+        $data = [
+            'plan_id' => $plan->plan_id,
+            'title' => $plan->title,
+            'description' => $plan->description,
+            'estimated_total_cost' => $plan->estimated_total_cost,
+            'actual_total_cost' => $plan->actual_total_cost,
+            'progress_percentage' => $plan->progress_percentage,
+            'status' => $plan->status ?? 'in_progress',
+            'stages_done' => $plan->stagesDoneCount(),
+            'stages_total' => $plan->stagesTotalCount(),
+            'stages_count' => $plan->stages->count(),
+            'created_at' => $plan->created_at,
+            'case' => $plan->case ? [
+                'case_id' => $plan->case->case_id,
+                'title' => $plan->case->title,
+                'before_photo' => $plan->case->before_photo,
+                'after_photo' => $plan->case->after_photo,
+            ] : null,
+        ];
+
+        if ($includePatient) {
+            $data['patient'] = [
+                'patient_id' => $plan->patient?->patient_id,
+                'name' => trim(
+                    ($plan->patient?->user?->first_name ?? '') . ' ' . ($plan->patient?->user?->last_name ?? '')
+                ),
+            ];
+        }
+
+        return $data;
     }
 
     /**
@@ -87,6 +134,9 @@ class DoctorTreatmentPlanService
             'estimated_total_cost' => $plan->estimated_total_cost,
             'actual_total_cost' => $plan->actual_total_cost,
             'progress_percentage' => $plan->progress_percentage,
+            'status' => $plan->status ?? 'in_progress',
+            'stages_done' => $plan->stagesDoneCount(),
+            'stages_total' => $plan->stagesTotalCount(),
             'created_at' => $plan->created_at,
             'patient' => [
                 'patient_id' => $plan->patient?->patient_id,
@@ -193,14 +243,23 @@ class DoctorTreatmentPlanService
 
     /**
      * Create a new treatment plan (optionally with its first stage).
+     *
+     * Phase H: "Case is a treatment plan" — a 1:1 `cases` row is created
+     * alongside the plan and dental chart, with the doctor-provided
+     * `before_photo` (required to initialize the case).
      */
-    public function create(User $user, array $data): JsonResponse
+    public function create(User $user, Request $request): JsonResponse
     {
         $doctor = Doctor::query()->findOrFail($user->user_id);
 
+        $data = $request->all();
         $validated = $data['plan'] ?? $data;
 
-        $plan = DB::transaction(function () use ($doctor, $validated) {
+        $beforePhoto = $request->hasFile('before_photo')
+            ? $request->file('before_photo')->store('cases/before', 'public')
+            : ($validated['before_photo'] ?? null);
+
+        $plan = DB::transaction(function () use ($doctor, $validated, $beforePhoto) {
             $plan = TreatmentPlan::create([
                 'patient_id' => $validated['patient_id'] ?? $validated['patientId'] ?? null,
                 'doctor_id' => $doctor->doctor_id,
@@ -209,6 +268,7 @@ class DoctorTreatmentPlanService
                 'estimated_total_cost' => $validated['estimated_total_cost'] ?? 0,
                 'actual_total_cost' => $validated['actual_total_cost'] ?? 0,
                 'progress_percentage' => $validated['progress_percentage'] ?? 0,
+                'status' => 'in_progress',
                 'created_at' => now(),
             ]);
 
@@ -217,6 +277,16 @@ class DoctorTreatmentPlanService
                 'plan_id' => $plan->plan_id,
                 'patient_id' => $plan->patient_id,
                 'doctor_id' => $doctor->doctor_id,
+                'created_at' => now(),
+            ]);
+
+            // Phase H: Case = treatment plan. Initialize the 1:1 case row with
+            // the doctor-uploaded before photo (optional at creation time).
+            CaseModel::create([
+                'treatment_plan_id' => $plan->plan_id,
+                'title' => $validated['title'] ?? 'Treatment Plan',
+                'patient_age' => $validated['patient_age'] ?? null,
+                'before_photo' => $beforePhoto,
                 'created_at' => now(),
             ]);
 
@@ -231,12 +301,14 @@ class DoctorTreatmentPlanService
         return response()->json([
             'success' => true,
             'message' => 'Treatment plan created.',
-            'data' => $plan->load('stages', 'dentalChart'),
+            'data' => $plan->load('stages', 'dentalChart', 'case'),
         ], 201);
     }
 
     /**
      * Add a stage to an existing plan.
+     * Guard (Phase F): only the owning doctor may edit, and only while the
+     * plan is In Progress.
      */
     public function addStage(User $user, int $planId, array $data): JsonResponse
     {
@@ -244,6 +316,13 @@ class DoctorTreatmentPlanService
         $plan = TreatmentPlan::query()
             ->where('doctor_id', $doctor->doctor_id)
             ->findOrFail($planId);
+
+        if (! $plan->isInProgress()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only in-progress treatment plans can be changed.',
+            ], 422);
+        }
 
         $stage = $this->createStage(
             $plan,
@@ -265,34 +344,16 @@ class DoctorTreatmentPlanService
 
     /**
      * Create an appointment inside a plan's stage.
+     *
+     * NOTE (Phase F/H): adding appointments to a treatment plan is the
+     * secretary's job and is NOT implemented for doctors — always 422.
      */
     public function addStageAppointment(User $user, int $planId, int $stageId, array $data): JsonResponse
     {
-        $doctor = Doctor::query()->findOrFail($user->user_id);
-        $plan = TreatmentPlan::query()
-            ->where('doctor_id', $doctor->doctor_id)
-            ->findOrFail($planId);
-
-        $stage = $plan->stages()->findOrFail($stageId);
-
-        $appointment = Appointment::create([
-            'patient_id' => $plan->patient_id,
-            'doctor_id' => $doctor->doctor_id,
-            'treatment_plan_id' => $plan->plan_id,
-            'treatment_stage_id' => $stage->stage_id,
-            'date' => $data['date'] ?? now()->toDateString(),
-            'start_time' => ($data['time'] ?? '09:00') . ':00',
-            'end_time' => ($data['time'] ?? '09:00') . ':30',
-            'status' => $data['status'] ?? 'pending',
-            'appointment_type' => 'normal',
-            'notes' => $data['notes'] ?? 'Stage appointment',
-        ]);
-
         return response()->json([
-            'success' => true,
-            'message' => 'Appointment added to stage.',
-            'data' => $appointment,
-        ], 201);
+            'success' => false,
+            'message' => "Adding appointments to a treatment plan is the secretary's job.",
+        ], 422);
     }
 
     /**
@@ -344,6 +405,8 @@ class DoctorTreatmentPlanService
 
     /**
      * Update a single tooth on a plan's dental chart.
+     * Guard (Phase F/H): only the owning doctor may edit, and only while the
+     * plan is In Progress (read-only otherwise).
      */
     public function updateChartTooth(User $user, int $planId, int $toothId, array $data): JsonResponse
     {
@@ -351,6 +414,13 @@ class DoctorTreatmentPlanService
         $plan = TreatmentPlan::query()
             ->where('doctor_id', $doctor->doctor_id)
             ->findOrFail($planId);
+
+        if (! $plan->isInProgress()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dental chart is read-only for finished/cancelled plans.',
+            ], 422);
+        }
 
         $chart = $plan->dentalChart ?: DentalChart::create([
             'plan_id' => $plan->plan_id,

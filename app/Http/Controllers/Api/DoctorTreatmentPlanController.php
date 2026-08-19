@@ -22,6 +22,14 @@ class DoctorTreatmentPlanController extends Controller
     }
 
     /**
+     * List ALL treatment plans the authenticated doctor manages (Plans tab).
+     */
+    public function indexAll(Request $request): JsonResponse
+    {
+        return $this->service->listAllForDoctor($request->user());
+    }
+
+    /**
      * Show a single treatment plan's details (stages + appointments + chart).
      */
     public function show(Request $request, int $plan): JsonResponse
@@ -34,7 +42,7 @@ class DoctorTreatmentPlanController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        return $this->service->create($request->user(), $request->all());
+        return $this->service->create($request->user(), $request);
     }
 
     /**

@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\DoctorAppointmentController;
 use App\Http\Controllers\Api\DoctorDashboardController;
 use App\Http\Controllers\Api\DoctorPatientController;
 use App\Http\Controllers\Api\DoctorTreatmentPlanController;
+use App\Http\Controllers\Api\DoctorSessionController;
 use App\Http\Controllers\Api\MedicationController;
 use App\Http\Controllers\Api\PatientMedicationController;
 use App\Http\Controllers\Api\DoctorNoteController;
@@ -194,12 +195,20 @@ Route::prefix('doctor/appointments')->group(function (): void {
 //! Doctor treatment-plan management (Phase B)
 Route::prefix('doctor')->middleware('doctor.bearer:Doctor')->group(function (): void {
     Route::get('/patients/{patient}/treatment-plans', [DoctorTreatmentPlanController::class, 'index']);
+    Route::get('/treatment-plans', [DoctorTreatmentPlanController::class, 'indexAll']);
     Route::get('/treatment-plans/{plan}', [DoctorTreatmentPlanController::class, 'show']);
     Route::post('/treatment-plans', [DoctorTreatmentPlanController::class, 'store']);
     Route::post('/treatment-plans/{plan}/stages', [DoctorTreatmentPlanController::class, 'storeStage']);
     Route::post('/treatment-plans/{plan}/stages/{stage}/appointments', [DoctorTreatmentPlanController::class, 'storeStageAppointment']);
     Route::get('/treatment-plans/{plan}/dental-chart', [DoctorTreatmentPlanController::class, 'chart']);
     Route::put('/treatment-plans/{plan}/dental-chart/teeth/{tooth}', [DoctorTreatmentPlanController::class, 'updateChartTooth']);
+
+    // Phase F — session lifecycle + plan status
+    Route::post('/appointments/{appointment}/start', [DoctorSessionController::class, 'start']);
+    Route::post('/appointments/{appointment}/complete', [DoctorSessionController::class, 'complete']);
+    Route::post('/treatment-plans/{plan}/stages/{stage}/done', [DoctorSessionController::class, 'markStageDone']);
+    Route::post('/treatment-plans/{plan}/finish', [DoctorSessionController::class, 'finishPlan']);
+    Route::post('/treatment-plans/{plan}/cancel', [DoctorSessionController::class, 'cancelPlan']);
 });
 
 //! Medication catalog (admin manages, everyone reads)
