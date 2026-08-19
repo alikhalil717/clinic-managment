@@ -74,11 +74,19 @@ class DoctorNoteService
     }
 
     /**
-     * Delete a doctor note (author only).
+     * Delete a doctor note (author only — Phase I ownership rule).
      */
-    public function destroy(int $noteId): JsonResponse
+    public function destroy(int $noteId, ?int $doctorId = null): JsonResponse
     {
         $note = DoctorNote::query()->findOrFail($noteId);
+
+        // Phase I: only the authoring doctor may delete the note.
+        if ($doctorId !== null && $note->doctor_id !== $doctorId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only delete your own notes.',
+            ], 403);
+        }
 
         $note->delete();
 

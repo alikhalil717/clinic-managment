@@ -7,6 +7,7 @@ use App\Http\Requests\StorePatientMedicationRequest;
 use App\Http\Requests\UpdatePatientMedicationRequest;
 use App\Services\PatientMedicationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PatientMedicationController extends Controller
 {
@@ -45,10 +46,10 @@ class PatientMedicationController extends Controller
     }
 
     /**
-     * Remove / stop a patient medication.
+     * Remove / stop a patient medication (Phase I: prescribing doctor only).
      */
-    public function destroy(int $patientMedicationId): JsonResponse
+    public function destroy(Request $request, int $patientMedication): JsonResponse
     {
-        return $this->patientMedicationService->destroy($patientMedicationId);
+        return $this->patientMedicationService->destroy($patientMedication, $request->user()->user_id);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Requests\StorePatientMedicationRequest;
 use App\Http\Requests\UpdatePatientMedicationRequest;
+use App\Models\Doctor;
 use App\Models\MedicalRecord;
 use App\Models\Patient;
 use App\Models\PatientMedication;
@@ -71,10 +72,20 @@ class PatientMedicationService
 
     /**
      * Update a patient medication (dosage/frequency/status).
+     * Phase I: only the prescribing doctor may update.
      */
     public function update(UpdatePatientMedicationRequest $request, int $patientMedicationId): JsonResponse
     {
         $medication = PatientMedication::query()->findOrFail($patientMedicationId);
+        $doctorId = $request->user()->user_id;
+
+        // Phase I: ownership rule — only the prescribing doctor may update.
+        if ($medication->prescribed_by !== $doctorId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only update medications you prescribed.',
+            ], 403);
+        }
 
         $medication->update($request->validated());
 
@@ -87,10 +98,19 @@ class PatientMedicationService
 
     /**
      * Mark a patient medication as no longer current (stopped).
+     * Phase I: only the prescribing doctor may remove.
      */
-    public function destroy(int $patientMedicationId): JsonResponse
+    public function destroy(int $patientMedicationId, ?int $doctorId = null): JsonResponse
     {
         $medication = PatientMedication::query()->findOrFail($patientMedicationId);
+
+        // Phase I: ownership rule — only the prescribing doctor may remove.
+        if ($doctorId !== null && $medication->prescribed_by !== $doctorId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only remove medications you prescribed.',
+            ], 403);
+        }
 
         $medication->delete();
 

@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\DoctorSessionController;
 use App\Http\Controllers\Api\MedicationController;
 use App\Http\Controllers\Api\PatientMedicationController;
 use App\Http\Controllers\Api\DoctorNoteController;
+use App\Http\Controllers\Api\DoctorMedicalRecordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -209,6 +210,18 @@ Route::prefix('doctor')->middleware('doctor.bearer:Doctor')->group(function (): 
     Route::post('/treatment-plans/{plan}/stages/{stage}/done', [DoctorSessionController::class, 'markStageDone']);
     Route::post('/treatment-plans/{plan}/finish', [DoctorSessionController::class, 'finishPlan']);
     Route::post('/treatment-plans/{plan}/cancel', [DoctorSessionController::class, 'cancelPlan']);
+
+    // Phase I — doctor medical-record aggregate + CRUD
+    Route::get('/patients/{patient}/medical-record', [DoctorMedicalRecordController::class, 'show']);
+    Route::post('/patients/{patient}/medical-record/allergies', [DoctorMedicalRecordController::class, 'storeAllergy']);
+    Route::put('/patients/{patient}/medical-record/allergies/{allergy}', [DoctorMedicalRecordController::class, 'updateAllergy']);
+    Route::delete('/patients/{patient}/medical-record/allergies/{allergy}', [DoctorMedicalRecordController::class, 'destroyAllergy']);
+    Route::post('/patients/{patient}/medical-record/history', [DoctorMedicalRecordController::class, 'storeHistory']);
+    Route::put('/patients/{patient}/medical-record/history/{history}', [DoctorMedicalRecordController::class, 'updateHistory']);
+    Route::delete('/patients/{patient}/medical-record/history/{history}', [DoctorMedicalRecordController::class, 'destroyHistory']);
+    Route::post('/patients/{patient}/medical-record/diagnoses', [DoctorMedicalRecordController::class, 'storeDiagnosis']);
+    Route::put('/patients/{patient}/medical-record/diagnoses/{diagnosis}', [DoctorMedicalRecordController::class, 'updateDiagnosis']);
+    Route::delete('/patients/{patient}/medical-record/diagnoses/{diagnosis}', [DoctorMedicalRecordController::class, 'destroyDiagnosis']);
 });
 
 //! Medication catalog (admin manages, everyone reads)

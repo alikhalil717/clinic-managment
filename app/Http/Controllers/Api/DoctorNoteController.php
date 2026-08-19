@@ -36,10 +36,10 @@ class DoctorNoteController extends Controller
     }
 
     /**
-     * Delete a doctor note.
+     * Delete a doctor note (author only).
      */
-    public function destroy(int $noteId): JsonResponse
+    public function destroy(Request $request, int $note): JsonResponse
     {
-        return $this->doctorNoteService->destroy($noteId);
+        return $this->doctorNoteService->destroy($note, $request->user()->user_id);
     }
 }
