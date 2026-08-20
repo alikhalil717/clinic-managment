@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class DoctorTreatmentPlanService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
+
     /**
      * List treatment plans belonging to the authenticated doctor for a patient.
      */
@@ -250,7 +254,7 @@ class DoctorTreatmentPlanService
      */
     public function create(User $user, Request $request): JsonResponse
     {
-        $doctor = Doctor::query()->findOrFail($user->user_id);
+        $doctor = Doctor::query()->with('user')->findOrFail($user->user_id);
 
         $data = $request->all();
         $validated = $data['plan'] ?? $data;
@@ -298,6 +302,17 @@ class DoctorTreatmentPlanService
             return $plan;
         });
 
+        $doctorName = trim(($doctor->user?->first_name ?? '') . ' ' . ($doctor->user?->last_name ?? ''));
+
+        $this->notifications->notify(
+            $plan->patient_id,
+            'treatment',
+            'New Treatment Plan',
+            "Dr. {$doctorName} created a new treatment plan \"{$plan->title}\" for you.",
+            $plan->plan_id,
+            $plan->toArray()
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Treatment plan created.',
@@ -333,6 +348,15 @@ class DoctorTreatmentPlanService
             $data['status'] ?? 'upcoming',
             $data['start_date'] ?? null,
             $data['end_date'] ?? null,
+        );
+
+        $this->notifications->notify(
+            $plan->patient_id,
+            'treatment',
+            'New Treatment Stage',
+            "A new stage \"{$stage->stage_name}\" was added to your treatment plan \"{$plan->title}\".",
+            $plan->plan_id,
+            ['plan' => $plan->toArray(), 'stage' => $stage->toArray()]
         );
 
         return response()->json([

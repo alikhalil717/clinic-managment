@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentBookingService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
+
     /**
      * Diagnostic working window (09:00–16:00) as per the requirements.
      */
@@ -59,6 +63,15 @@ class AppointmentBookingService
             'notes' => 'Diagnostic appointment',
         ]);
 
+        $this->notifications->notify(
+            $appointment->patient_id,
+            'appointment',
+            'Appointment Requested',
+            "Your diagnostic appointment on {$date} at {$time} has been requested. We'll confirm it soon.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
         return response()->json([
             'success' => true,
             'appointment_type' => 'diagnostic',
@@ -80,7 +93,7 @@ class AppointmentBookingService
      */
     public function createNormal(array $data): JsonResponse
     {
-        Patient::query()->findOrFail($data['patient_id']);
+        $patient = Patient::with('user')->findOrFail($data['patient_id']);
         $doctor = Doctor::with('user')->findOrFail($data['doctor_id']);
 
         $planId = $data['treatment_plan_id'] ?? null;
@@ -159,6 +172,27 @@ class AppointmentBookingService
             'appointment_type' => 'normal',
             'notes' => $data['notes'] ?? 'Normal appointment',
         ]);
+
+        $doctorName = trim(($doctor->user?->first_name ?? '') . ' ' . ($doctor->user?->last_name ?? ''));
+        $patientName = trim(($patient->user?->first_name ?? '') . ' ' . ($patient->user?->last_name ?? ''));
+
+        $this->notifications->notify(
+            $appointment->patient_id,
+            'appointment',
+            'Appointment Requested',
+            "Your appointment with Dr. {$doctorName} on {$date} at {$time} has been requested. We'll confirm it soon.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
+        $this->notifications->notify(
+            $doctor->doctor_id,
+            'appointment',
+            'New Appointment Request',
+            "Patient {$patientName} requested an appointment with you on {$date} at {$time}.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
 
         return response()->json([
             'success' => true,

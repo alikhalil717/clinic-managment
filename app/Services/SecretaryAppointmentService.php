@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\TreatmentStage;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 
 class SecretaryAppointmentService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
     /**
      * Clinic time slots used by the secretary scheduler.
      */
@@ -126,7 +130,7 @@ class SecretaryAppointmentService
     /**
      * Update an appointment (status change and/or reschedule) — readonly→ confirmed/rejected.
      */
-    public function update(int $appointmentId, array $data): JsonResponse
+    public function update(int $appointmentId, array $data, ?User $actor = null): JsonResponse
     {
         $appointment = Appointment::with(['doctor.user', 'patient.user'])
             ->findOrFail($appointmentId);
@@ -227,6 +231,37 @@ class SecretaryAppointmentService
         $appointment->update($updateData);
         $appointment->refresh();
 
+        $actorName = $actor ? trim(($actor->first_name ?? '') . ' ' . ($actor->last_name ?? '')) : 'The secretary';
+        $rescheduled = array_key_exists('date', $updateData) && array_key_exists('start_time', $updateData);
+
+        if ($status === 'confirmed') {
+            $action = $rescheduled
+                ? "rescheduled to {$updateData['date']} at {$updateData['start_time']}"
+                : 'confirmed';
+        } else {
+            $action = 'rejected';
+        }
+
+        $this->notifications->notify(
+            $appointment->patient_id,
+            'appointment',
+            'Appointment Updated',
+            "Your appointment on {$appointment->date} at {$appointment->start_time} was {$action} by {$actorName}.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
+        if ($appointment->doctor_id) {
+            $this->notifications->notify(
+                $appointment->doctor_id,
+                'appointment',
+                'Appointment Updated',
+                "The appointment on {$appointment->date} at {$appointment->start_time} was {$action} by {$actorName}.",
+                $appointment->appointment_id,
+                $appointment->toArray()
+            );
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Appointment updated successfully.',
@@ -251,7 +286,7 @@ class SecretaryAppointmentService
     /**
      * Create a confirmed appointment for a treatment plan stage.
      */
-    public function storeStageAppointment(int $planId, int $stageId, array $data): JsonResponse
+    public function storeStageAppointment(int $planId, int $stageId, array $data, ?User $actor = null): JsonResponse
     {
         $validator = Validator::make($data, [
             'date' => ['required', 'date', 'date_format:Y-m-d'],
@@ -317,6 +352,26 @@ class SecretaryAppointmentService
             'appointment_type' => 'normal',
             'notes' => 'Stage: ' . $stage->stage_name . ' | ' . $stage->plan->title,
         ]);
+
+        $actorName = $actor ? trim(($actor->first_name ?? '') . ' ' . ($actor->last_name ?? '')) : 'The secretary';
+
+        $this->notifications->notify(
+            $stage->plan->patient_id,
+            'appointment',
+            'Appointment Confirmed',
+            "Your appointment for stage \"{$stage->stage_name}\" of \"{$stage->plan->title}\" on {$data['date']} at {$start} has been confirmed by {$actorName}.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
+        $this->notifications->notify(
+            $stage->plan->doctor_id,
+            'appointment',
+            'Appointment Confirmed',
+            "An appointment for stage \"{$stage->stage_name}\" of \"{$stage->plan->title}\" was added on {$data['date']} at {$start} by {$actorName}.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
 
         return response()->json([
             'success' => true,

@@ -29,6 +29,10 @@ use Illuminate\Support\Facades\DB;
  */
 class DoctorSessionService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
+
     /**
      * Start a clinical session for an appointment.
      * Sets the appointment status to "ongoing" (idempotent if already ongoing).
@@ -58,6 +62,15 @@ class DoctorSessionService
 
         $appointment->update(['status' => 'ongoing']);
 
+        $this->notifications->notify(
+            $appointment->patient_id,
+            'appointment',
+            'Session Started',
+            "Your session on {$appointment->date} at {$appointment->start_time} has started.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Session started.',
@@ -86,7 +99,7 @@ class DoctorSessionService
 
         $appointment->update(['status' => 'finished']);
 
-        TreatmentSession::create([
+        $session = TreatmentSession::create([
             'appointment_id' => $appointment->appointment_id,
             'plan_id' => $appointment->treatment_plan_id,
             'doctor_id' => $doctor->doctor_id,
@@ -95,6 +108,18 @@ class DoctorSessionService
             'estimated_cost' => $data['estimated_cost'] ?? null,
             'notes' => $data['notes'] ?? $appointment->notes ?? null,
         ]);
+
+        $this->notifications->notify(
+            $appointment->patient_id,
+            'treatment',
+            'Session Completed',
+            'Your session has been completed' . ($session->estimated_cost ? " — estimated cost: {$session->estimated_cost}." : '.'),
+            $appointment->appointment_id,
+            [
+                'appointment' => $appointment->toArray(),
+                'session' => $session->toArray(),
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -113,6 +138,15 @@ class DoctorSessionService
 
         $stage = $plan->stages()->findOrFail($stageId);
         $stage->update(['status' => 'completed']);
+
+        $this->notifications->notify(
+            $plan->patient_id,
+            'treatment',
+            'Stage Completed',
+            "Stage \"{$stage->stage_name}\" of your treatment plan \"{$plan->title}\" has been completed.",
+            $plan->plan_id,
+            ['plan' => $plan->toArray(), 'stage' => $stage->toArray()]
+        );
 
         return response()->json([
             'success' => true,
@@ -193,6 +227,15 @@ class DoctorSessionService
             }
         });
 
+        $this->notifications->notify(
+            $plan->patient_id,
+            'treatment',
+            'Treatment Plan Finished',
+            "Your treatment plan \"{$plan->title}\" has been completed. Congratulations!",
+            $plan->plan_id,
+            $plan->toArray()
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Treatment plan finished.',
@@ -212,6 +255,15 @@ class DoctorSessionService
             'status' => 'cancelled',
             'progress_percentage' => 0,
         ]);
+
+        $this->notifications->notify(
+            $plan->patient_id,
+            'treatment',
+            'Treatment Plan Cancelled',
+            "Your treatment plan \"{$plan->title}\" has been cancelled.",
+            $plan->plan_id,
+            $plan->toArray()
+        );
 
         return response()->json([
             'success' => true,

@@ -5,11 +5,15 @@ namespace App\Services;
 use App\Models\Patient;
 use App\Models\Payment;
 use App\Models\TreatmentSession;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class SecretaryPaymentService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
     /**
      * List unpaid invoices (treatment sessions with remaining balance) for a patient.
      */
@@ -57,7 +61,7 @@ class SecretaryPaymentService
     /**
      * Collect cash payment: mark the selected patient's invoices as fully paid.
      */
-    public function collectCash(int $patientId, array $sessionIds, string $method): JsonResponse
+    public function collectCash(int $patientId, array $sessionIds, string $method, ?User $actor = null): JsonResponse
     {
         $patient = Patient::findOrFail($patientId);
 
@@ -96,6 +100,23 @@ class SecretaryPaymentService
                 $paidCount++;
             }
         });
+
+        if ($paidCount > 0) {
+            $actorName = $actor ? trim(($actor->first_name ?? '') . ' ' . ($actor->last_name ?? '')) : 'The secretary';
+
+            $this->notifications->notify(
+                $patientId,
+                'payment',
+                'Payment Received',
+                "A payment of {$amountReceived} {$method} was received by {$actorName}.",
+                null,
+                [
+                    'amount' => round($amountReceived, 2),
+                    'invoices_paid' => $paidCount,
+                    'method' => $method,
+                ]
+            );
+        }
 
         return response()->json([
             'success' => true,

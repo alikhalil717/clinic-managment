@@ -35,7 +35,8 @@ class SecretaryPaymentController extends Controller
         return $this->secretaryPaymentService->collectCash(
             $patient,
             $validated['session_ids'],
-            $validated['method'] ?? 'cash'
+            $validated['method'] ?? 'cash',
+            $request->user()
         );
     }
 }

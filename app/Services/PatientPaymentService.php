@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Hash;
 
 class PatientPaymentService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
+
     /**
      * Submit an electronic payment for the authenticated patient's selected sessions.
      */
@@ -60,6 +64,21 @@ class PatientPaymentService
                 $paidCount++;
             }
         });
+
+        if ($paidCount > 0) {
+            $this->notifications->notify(
+                $patientId,
+                'payment',
+                'Payment Successful',
+                "Your electronic payment of {$amountReceived} was successful.",
+                null,
+                [
+                    'amount' => round($amountReceived, 2),
+                    'invoices_paid' => $paidCount,
+                    'method' => 'card',
+                ]
+            );
+        }
 
         return response()->json([
             'success' => true,

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Doctor;
 use App\Models\Patient;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -10,6 +11,9 @@ use Illuminate\Http\Request;
 
 class PatientAppointmentService
 {
+    public function __construct(
+        private readonly NotificationService $notifications
+    ) {}
     /**
      * All appointments belonging to the authenticated patient.
      * The app splits these into upcoming / completed / cancelled.
@@ -53,7 +57,7 @@ class PatientAppointmentService
      */
     public function add(Request $request): JsonResponse
     {
-        $patient = Patient::query()->findOrFail($request->user()->user_id);
+        $patient = Patient::query()->with('user')->findOrFail($request->user()->user_id);
 
         $data = $request->validate([
             'doctor_id' => ['required', 'integer', 'exists:doctor,doctor_id'],
@@ -61,6 +65,8 @@ class PatientAppointmentService
             'time' => ['required', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $doctor = Doctor::query()->with('user')->findOrFail($data['doctor_id']);
 
         $appointment = Appointment::create([
             'patient_id' => $patient->patient_id,
@@ -72,6 +78,27 @@ class PatientAppointmentService
             'appointment_type' => 'normal',
             'notes' => $data['notes'] ?? 'Normal appointment',
         ]);
+
+        $doctorName = trim(($doctor->user?->first_name ?? '') . ' ' . ($doctor->user?->last_name ?? ''));
+        $patientName = trim(($patient->user?->first_name ?? '') . ' ' . ($patient->user?->last_name ?? ''));
+
+        $this->notifications->notify(
+            $patient->patient_id,
+            'appointment',
+            'Appointment Requested',
+            "Your appointment with Dr. {$doctorName} on {$data['date']} at {$data['time']} has been requested. We'll confirm it soon.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
+
+        $this->notifications->notify(
+            $doctor->doctor_id,
+            'appointment',
+            'New Appointment Request',
+            "Patient {$patientName} requested an appointment with you on {$data['date']} at {$data['time']}.",
+            $appointment->appointment_id,
+            $appointment->toArray()
+        );
 
         return response()->json([
             'success' => true,
@@ -85,13 +112,24 @@ class PatientAppointmentService
      */
     public function cancel(Request $request, int $appointmentId): JsonResponse
     {
-        $patient = Patient::query()->findOrFail($request->user()->user_id);
+        $patient = Patient::query()->with('user')->findOrFail($request->user()->user_id);
 
         $appointment = Appointment::query()
             ->where('patient_id', $patient->patient_id)
             ->findOrFail($appointmentId);
 
         $appointment->update(['status' => 'canceled']);
+
+        if ($appointment->doctor_id) {
+            $this->notifications->notify(
+                $appointment->doctor_id,
+                'appointment',
+                'Appointment Cancelled',
+                "Patient {$patient->user?->first_name} {$patient->user?->last_name} cancelled the appointment on {$appointment->date} at {$appointment->start_time}.",
+                $appointment->appointment_id,
+                $appointment->toArray()
+            );
+        }
 
         return response()->json([
             'success' => true,

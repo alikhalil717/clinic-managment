@@ -35,6 +35,8 @@ use App\Http\Controllers\Api\MedicationController;
 use App\Http\Controllers\Api\PatientMedicationController;
 use App\Http\Controllers\Api\DoctorNoteController;
 use App\Http\Controllers\Api\DoctorMedicalRecordController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -305,4 +307,17 @@ Route::prefix('patients/{patient}/notes')->group(function (): void {
         ->middleware('doctor.bearer:Doctor,Patient');
     Route::delete('/{note}', [DoctorNoteController::class, 'destroy'])
         ->middleware('doctor.bearer:Doctor');
+});
+
+//! Push device tokens + in-app notifications (patient & doctor)
+Route::post('/device-token', [DeviceTokenController::class, 'store'])
+    ->middleware('patient.bearer:Patient,Doctor');
+Route::delete('/device-token', [DeviceTokenController::class, 'destroy'])
+    ->middleware('patient.bearer:Patient,Doctor');
+Route::prefix('notifications')->middleware('patient.bearer:Patient,Doctor')->group(function (): void {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::get('/{notification}', [NotificationController::class, 'show']);
+    Route::post('/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::post('/read-all', [NotificationController::class, 'markAllRead']);
 });

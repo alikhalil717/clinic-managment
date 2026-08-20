@@ -34,7 +34,7 @@ class SecretaryAppointmentController extends Controller
      */
     public function update(Request $request, int $appointment): JsonResponse
     {
-        return $this->secretaryAppointmentService->update($appointment, $request->all());
+        return $this->secretaryAppointmentService->update($appointment, $request->all(), $request->user());
     }
 
     /**
@@ -42,6 +42,6 @@ class SecretaryAppointmentController extends Controller
      */
     public function storeStage(Request $request, int $plan, int $stage): JsonResponse
     {
-        return $this->secretaryAppointmentService->storeStageAppointment($plan, $stage, $request->all());
+        return $this->secretaryAppointmentService->storeStageAppointment($plan, $stage, $request->all(), $request->user());
     }
 }
