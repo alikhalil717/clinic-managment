@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\AdminTreatmentPlanController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PatientAppointmentController;
 use App\Http\Controllers\Api\PatientTreatmentPlanController;
+use App\Http\Controllers\Api\PatientPaymentController;
 use App\Http\Controllers\Api\PatientVerificationController;
 use App\Http\Controllers\Api\DoctorAppointmentController;
 use App\Http\Controllers\Api\DoctorDashboardController;
@@ -71,6 +72,8 @@ Route::prefix('patient')->group(function (): void {
     Route::put('/medical-history', [MedicalHistoryController::class, 'update'])
         ->middleware('patient.bearer:Patient');
     Route::get('/dental-chart', [DentalChartController::class, 'index'])
+        ->middleware('patient.bearer:Patient');
+    Route::post('/payment/submit', [PatientPaymentController::class, 'submit'])
         ->middleware('patient.bearer:Patient');
 });
 //! Doctor
@@ -125,7 +128,7 @@ Route::prefix('secretary')->group(function (): void {
     Route::get('/patients/{patient}', [SecretaryPatientController::class, 'show'])
         ->middleware('secretary.bearer:Secretary');
     Route::get('/patients/{patient}/invoices', [SecretaryPaymentController::class, 'pendingInvoices'])
-        ->middleware('secretary.bearer:Secretary');
+        ->middleware('secretary.bearer:Secretary,patient');
     Route::post('/patients/{patient}/payments', [SecretaryPaymentController::class, 'store'])
         ->middleware('secretary.bearer:Secretary');
     Route::get('/doctors', [SecretaryDoctorController::class, 'index'])
