@@ -23,7 +23,6 @@ class StoreDoctorRequest extends FormRequest
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8'],
             'specialization' => ['required', 'string', 'max:255'],
-            'license_number' => ['required', 'string', 'max:255'],
             'years_of_experience' => ['required', 'integer', 'min:0'],
             'working_days' => ['sometimes', 'array'],
             'working_days.*' => ['string', 'in:saturday,sunday,monday,tuesday,wednesday,thursday,friday'],

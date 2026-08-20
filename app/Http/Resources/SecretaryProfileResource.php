@@ -17,6 +17,8 @@ class SecretaryProfileResource extends JsonResource
         return [
             'user' => new UserProfileResource($this->user),
             'secretary_id' => $this->secretary_id,
+            //fetsch and unhash the password for security reasons
+            'password' => $this->user->password,
         ];
     }
 }

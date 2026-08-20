@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('doctor', function (Blueprint $table) {
             $table->unsignedBigInteger('doctor_id')->primary();
             $table->string('specialization');
-            $table->string('license_number');
+            $table->string('license_number')->nullable();
             $table->integer('years_of_experience');
             $table->float('rating');
             $table->integer('reviews_count');

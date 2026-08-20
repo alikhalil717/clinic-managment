@@ -65,7 +65,7 @@ class AdminDoctorService
         $doctor = Doctor::query()->create([
             'doctor_id' => $user->user_id,
             'specialization' => $data['specialization'],
-            'license_number' => $data['license_number'],
+            'license_number' => $data['license_number'] ?? null,
             'years_of_experience' => $data['years_of_experience'],
             'rating' => 0,
             'reviews_count' => 0,

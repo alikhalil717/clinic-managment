@@ -47,7 +47,14 @@ class DatabaseSeeder extends Seeder
         // -----------------------------------------------------------------
         // Existing random seed data
         // -----------------------------------------------------------------
-        Admin::factory()->create();
+        $testuser2 = User::factory()->create([
+            'email' => 'aliadmin@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
+        $testadmin = Admin::factory()->create([
+            'admin_id' => $testuser2->user_id,
+        ]);
         Secretary::factory()->create();
 
         $doctor = Doctor::factory()->create();

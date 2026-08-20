@@ -48,24 +48,30 @@ class DoctorMedicalRecordService
             'doctorNotes.doctor.user',
         ]);
 
+        $allergies = $record->getRelation('allergies') ?? collect();
+        $histories = $record->getRelation('histories') ?? collect();
+        $diagnoses = $record->getRelation('diagnoses') ?? collect();
+        $medications = $record->getRelation('medications') ?? collect();
+        $doctorNotes = $record->getRelation('doctorNotes') ?? collect();
+
         return response()->json([
             'success' => true,
             'data' => [
                 'record_id' => $record->record_id,
                 'patient_id' => $record->patient_id,
-                'allergies' => $record->allergies->map(fn($a) => [
+                'allergies' => $allergies->map(fn($a) => [
                     'allergy_id' => $a->allergy_id,
                     'allergy_name' => $a->allergy_name,
                     'severity' => $a->severity,
                     'notes' => $a->notes,
                 ]),
-                'medical_history' => $record->histories->map(fn($h) => [
+                'medical_history' => $histories->map(fn($h) => [
                     'history_id' => $h->history_id,
                     'condition_name' => $h->condition_name,
                     'description' => $h->description,
                     'diagnosed_date' => $h->diagnosed_date,
                 ]),
-                'diagnoses' => $record->diagnoses->map(fn($d) => [
+                'diagnoses' => $diagnoses->map(fn($d) => [
                     'diagnosis_id' => $d->diagnosis_id,
                     'diagnosis_name' => $d->diagnosis_name,
                     'description' => $d->description,
@@ -78,7 +84,7 @@ class DoctorMedicalRecordService
                         ),
                     ] : null,
                 ]),
-                'medications' => $record->medications->map(fn($m) => [
+                'medications' => $medications->map(fn($m) => [
                     'patient_medication_id' => $m->patient_medication_id,
                     'medication_id' => $m->medication_id,
                     'medication' => $m->medication ? [
@@ -97,7 +103,7 @@ class DoctorMedicalRecordService
                     ) : null,
                     'notes' => $m->notes,
                 ]),
-                'doctor_notes' => $record->doctorNotes->map(fn($n) => [
+                'doctor_notes' => $doctorNotes->map(fn($n) => [
                     'note_id' => $n->note_id,
                     'title' => $n->title,
                     'note' => $n->note,

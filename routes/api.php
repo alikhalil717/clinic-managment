@@ -11,6 +11,13 @@ use App\Http\Controllers\Api\SecretaryAuthController;
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminDoctorController;
+use App\Http\Controllers\Api\AdminSecretaryController;
+use App\Http\Controllers\Api\SecretaryDashboardController;
+use App\Http\Controllers\Api\SecretaryAppointmentController;
+use App\Http\Controllers\Api\SecretaryDoctorController;
+use App\Http\Controllers\Api\SecretaryPatientController;
+use App\Http\Controllers\Api\SecretaryPaymentController;
+use App\Http\Controllers\Api\SecretaryTreatmentPlanController;
 use App\Http\Controllers\Api\AdminPatientController;
 use App\Http\Controllers\Api\AdminAppointmentController;
 use App\Http\Controllers\Api\AdminTreatmentPlanController;
@@ -103,6 +110,30 @@ Route::prefix('secretary')->group(function (): void {
         ->middleware('secretary.bearer:Secretary');
     Route::post('/update-profile', [SecretaryAuthController::class, 'updateProfile'])
         ->middleware('secretary.bearer:Secretary');
+    Route::get('/dashboard', [SecretaryDashboardController::class, 'dashboard'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/appointments', [SecretaryAppointmentController::class, 'index'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/appointments/{appointment}', [SecretaryAppointmentController::class, 'show'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::put('/appointments/{appointment}', [SecretaryAppointmentController::class, 'update'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::post('/appointments/stage/{stage}', [SecretaryAppointmentController::class, 'storeStage'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/patients', [SecretaryPatientController::class, 'index'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/patients/{patient}', [SecretaryPatientController::class, 'show'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/patients/{patient}/invoices', [SecretaryPaymentController::class, 'pendingInvoices'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::post('/patients/{patient}/payments', [SecretaryPaymentController::class, 'store'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/doctors', [SecretaryDoctorController::class, 'index'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/treatment-plans', [SecretaryTreatmentPlanController::class, 'index'])
+        ->middleware('secretary.bearer:Secretary');
+    Route::get('/treatment-plans/{treatmentPlan}', [SecretaryTreatmentPlanController::class, 'show'])
+        ->middleware('secretary.bearer:Secretary');
 });
 //! Admin manage dashboard
 Route::prefix('admin')->group(function (): void {
@@ -120,6 +151,15 @@ Route::prefix('admin')->group(function (): void {
         ->middleware('admin.bearer:Admin');
     Route::delete('/doctors/{doctor}', [AdminDoctorController::class, 'destroy'])
         ->middleware('admin.bearer:Admin');
+    //! Admin manage secretary (CRUD)
+    Route::get('/secretaries', [AdminSecretaryController::class, 'index'])
+        ->middleware('admin.bearer:Admin');
+    Route::post('/secretaries', [AdminSecretaryController::class, 'store'])
+        ->middleware('admin.bearer:Admin');
+    Route::put('/secretaries/{secretary}', [AdminSecretaryController::class, 'update'])
+        ->middleware('admin.bearer:Admin');
+    Route::delete('/secretaries/{secretary}', [AdminSecretaryController::class, 'destroy'])
+        ->middleware('admin.bearer:Admin');
     //! Admin manage patients
     Route::get('/patients', [AdminPatientController::class, 'index'])
         ->middleware('admin.bearer:Admin');
@@ -131,6 +171,8 @@ Route::prefix('admin')->group(function (): void {
         ->middleware('admin.bearer:Admin');
     Route::delete('/patients/{patient}', [AdminPatientController::class, 'destroy'])
         ->middleware('admin.bearer:Admin');
+    Route::get('/{id}/points', [PatientDashboardController::class, 'points'])
+        ->middleware('patient.bearer:Admin');
     //! Admin manage appointments (Read only)
     Route::get('/appointments', [AdminAppointmentController::class, 'index'])
         ->middleware('admin.bearer:Admin');
@@ -204,14 +246,14 @@ Route::prefix('doctor')->middleware('doctor.bearer:Doctor')->group(function (): 
     Route::get('/treatment-plans/{plan}/dental-chart', [DoctorTreatmentPlanController::class, 'chart']);
     Route::put('/treatment-plans/{plan}/dental-chart/teeth/{tooth}', [DoctorTreatmentPlanController::class, 'updateChartTooth']);
 
-    // Phase F — session lifecycle + plan status
+    //! Phase F — session lifecycle + plan status
     Route::post('/appointments/{appointment}/start', [DoctorSessionController::class, 'start']);
     Route::post('/appointments/{appointment}/complete', [DoctorSessionController::class, 'complete']);
     Route::post('/treatment-plans/{plan}/stages/{stage}/done', [DoctorSessionController::class, 'markStageDone']);
     Route::post('/treatment-plans/{plan}/finish', [DoctorSessionController::class, 'finishPlan']);
     Route::post('/treatment-plans/{plan}/cancel', [DoctorSessionController::class, 'cancelPlan']);
 
-    // Phase I — doctor medical-record aggregate + CRUD
+    //! Phase I — doctor medical-record aggregate + CRUD
     Route::get('/patients/{patient}/medical-record', [DoctorMedicalRecordController::class, 'show']);
     Route::post('/patients/{patient}/medical-record/allergies', [DoctorMedicalRecordController::class, 'storeAllergy']);
     Route::put('/patients/{patient}/medical-record/allergies/{allergy}', [DoctorMedicalRecordController::class, 'updateAllergy']);
