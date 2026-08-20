@@ -40,8 +40,8 @@ class SecretaryAppointmentController extends Controller
     /**
      * Create a confirmed appointment for a treatment plan stage.
      */
-    public function storeStage(Request $request, int $stage): JsonResponse
+    public function storeStage(Request $request, int $plan, int $stage): JsonResponse
     {
-        return $this->secretaryAppointmentService->storeStageAppointment($stage, $request->all());
+        return $this->secretaryAppointmentService->storeStageAppointment($plan, $stage, $request->all());
     }
 }

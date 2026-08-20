@@ -5,10 +5,10 @@ namespace App\Services;
 use App\Models\TreatmentPlan;
 use Illuminate\Http\JsonResponse;
 
-class AdminTreatmentPlanService
+class SecretaryTreatmentPlanService
 {
     /**
-     * Get paginated list of all treatment plans (read-only for admin).
+     * Get list of all treatment plans (read-only for secretary).
      */
     public function index(): JsonResponse
     {

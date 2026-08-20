@@ -251,7 +251,7 @@ class SecretaryAppointmentService
     /**
      * Create a confirmed appointment for a treatment plan stage.
      */
-    public function storeStageAppointment(int $stageId, array $data): JsonResponse
+    public function storeStageAppointment(int $planId, int $stageId, array $data): JsonResponse
     {
         $validator = Validator::make($data, [
             'date' => ['required', 'date', 'date_format:Y-m-d'],
@@ -267,7 +267,9 @@ class SecretaryAppointmentService
             ], 422);
         }
 
-        $stage = TreatmentStage::with('plan')->findOrFail($stageId);
+        $stage = TreatmentStage::with('plan')
+            ->where('plan_id', $planId)
+            ->findOrFail($stageId);
 
         $slots = array_values(array_unique($data['slots']));
         sort($slots);
@@ -306,10 +308,13 @@ class SecretaryAppointmentService
         $appointment = Appointment::create([
             'patient_id' => $stage->plan->patient_id,
             'doctor_id' => $stage->plan->doctor_id,
+            'treatment_plan_id' => $stage->plan_id,
+            'treatment_stage_id' => $stage->stage_id,
             'date' => $data['date'],
             'start_time' => $start,
             'end_time' => $end,
             'status' => 'confirmed',
+            'appointment_type' => 'normal',
             'notes' => 'Stage: ' . $stage->stage_name . ' | ' . $stage->plan->title,
         ]);
 

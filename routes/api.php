@@ -118,7 +118,7 @@ Route::prefix('secretary')->group(function (): void {
         ->middleware('secretary.bearer:Secretary');
     Route::put('/appointments/{appointment}', [SecretaryAppointmentController::class, 'update'])
         ->middleware('secretary.bearer:Secretary');
-    Route::post('/appointments/stage/{stage}', [SecretaryAppointmentController::class, 'storeStage'])
+    Route::post('/appointments/treatment-plans/{plan}/stages/{stage}', [SecretaryAppointmentController::class, 'storeStage'])
         ->middleware('secretary.bearer:Secretary');
     Route::get('/patients', [SecretaryPatientController::class, 'index'])
         ->middleware('secretary.bearer:Secretary');

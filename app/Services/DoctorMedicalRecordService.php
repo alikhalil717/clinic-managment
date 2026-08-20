@@ -38,7 +38,7 @@ class DoctorMedicalRecordService
             ['patient_id' => $patient->patient_id],
             ['created_at' => now()]
         );
-
+        
         $record->load([
             'allergies',
             'histories',
