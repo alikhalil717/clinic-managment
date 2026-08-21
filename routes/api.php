@@ -305,6 +305,8 @@ Route::prefix('patients/{patient}/notes')->group(function (): void {
         ->middleware('doctor.bearer:Doctor');
     Route::get('/{note}', [DoctorNoteController::class, 'show'])
         ->middleware('doctor.bearer:Doctor,Patient');
+    Route::put('/{note}', [DoctorNoteController::class, 'update'])
+        ->middleware('doctor.bearer:Doctor');
     Route::delete('/{note}', [DoctorNoteController::class, 'destroy'])
         ->middleware('doctor.bearer:Doctor');
 });

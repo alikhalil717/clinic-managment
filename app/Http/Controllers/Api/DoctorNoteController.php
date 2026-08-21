@@ -32,16 +32,32 @@ class DoctorNoteController extends Controller
 
     /**
      * Show a single doctor note.
+     *
+     * NOTE: the {patient} route parameter MUST be declared before {note}
+     * here — Laravel maps route arguments positionally, and omitting it
+     * makes the patient id land in $note ("string given" TypeError).
      */
-    public function show(DoctorNote $note): JsonResponse
+    public function show(Request $request, int $patient, DoctorNote $note): JsonResponse
     {
         return $this->doctorNoteService->show($note->note_id);
     }
 
     /**
+     * Update a doctor note (author only).
+     */
+    public function update(Request $request, int $patient, DoctorNote $note): JsonResponse
+    {
+        return $this->doctorNoteService->update(
+            $note->note_id,
+            $request->all(),
+            $request->user()->user_id,
+        );
+    }
+
+    /**
      * Delete a doctor note (author only).
      */
-    public function destroy(Request $request, DoctorNote $note): JsonResponse
+    public function destroy(Request $request, int $patient, DoctorNote $note): JsonResponse
     {
         return $this->doctorNoteService->destroy($note->note_id, $request->user()->user_id);
     }

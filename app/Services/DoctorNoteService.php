@@ -74,6 +74,51 @@ class DoctorNoteService
     }
 
     /**
+     * Update a doctor note (author only — Phase I ownership rule).
+     * Accepts { title?, note, note_type? } — mirrors the store validation.
+     */
+    public function update(int $noteId, array $data, ?int $doctorId = null): JsonResponse
+    {
+        $note = DoctorNote::query()->findOrFail($noteId);
+
+        if ($doctorId !== null && (int) $note->doctor_id !== (int) $doctorId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only edit your own notes.',
+            ], 403);
+        }
+
+        $body = trim((string) ($data['note'] ?? ''));
+
+        if ($body === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'The note field is required.',
+            ], 422);
+        }
+
+        $note->note = $body;
+
+        if (array_key_exists('title', $data)) {
+            $title = trim((string) ($data['title'] ?? ''));
+            $note->title = $title !== '' ? mb_substr($title, 0, 255) : null;
+        }
+
+        if (! empty($data['note_type'])
+            && in_array($data['note_type'], ['general', 'prescription', 'follow_up', 'referral'], true)) {
+            $note->note_type = $data['note_type'];
+        }
+
+        $note->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctor note updated successfully.',
+            'data' => $note->fresh(),
+        ]);
+    }
+
+    /**
      * Delete a doctor note (author only — Phase I ownership rule).
      */
     public function destroy(int $noteId, ?int $doctorId = null): JsonResponse
