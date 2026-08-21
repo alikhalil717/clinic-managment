@@ -130,7 +130,7 @@ Route::prefix('secretary')->group(function (): void {
     Route::get('/patients/{patient}', [SecretaryPatientController::class, 'show'])
         ->middleware('secretary.bearer:Secretary');
     Route::get('/patients/{patient}/invoices', [SecretaryPaymentController::class, 'pendingInvoices'])
-        ->middleware('secretary.bearer:Secretary,patient');
+        ->middleware('secretary.bearer:Secretary,Patient');
     Route::post('/patients/{patient}/payments', [SecretaryPaymentController::class, 'store'])
         ->middleware('secretary.bearer:Secretary');
     Route::get('/doctors', [SecretaryDoctorController::class, 'index'])
