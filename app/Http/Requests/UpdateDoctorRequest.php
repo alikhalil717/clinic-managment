@@ -40,6 +40,7 @@ class UpdateDoctorRequest extends FormRequest
             'working_hours.*' => ['array'],
             'working_hours.*.start' => ['nullable', 'date_format:H:i,H:i:s'],
             'working_hours.*.end' => ['nullable', 'date_format:H:i,H:i:s'],
+            'profile_image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ];
     }
 

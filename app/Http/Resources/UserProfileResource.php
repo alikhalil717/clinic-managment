@@ -21,7 +21,9 @@ class UserProfileResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'role' => $this->role,
-            'profile_image' => $this->profile_image,
+            'profile_image' => $this->profile_image
+                ? asset('storage/' . $this->profile_image)
+                : null,
             'created_at' => $this->created_at,
         ];
     }

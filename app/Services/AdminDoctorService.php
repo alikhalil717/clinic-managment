@@ -9,6 +9,7 @@ use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdminDoctorService
@@ -54,6 +55,10 @@ class AdminDoctorService
     {
         $data = $request->validated();
 
+        $profileImagePath = $request->hasFile('profile_image')
+            ? $request->file('profile_image')->store('profiles', 'public')
+            : null;
+
         $user = User::query()->create([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
@@ -62,6 +67,7 @@ class AdminDoctorService
             'password' => Hash::make($data['password']),
             'role' => 'doctor',
             'api_token' => Str::random(60),
+            'profile_image' => $profileImagePath,
         ]);
 
         $doctor = Doctor::query()->create([
@@ -122,6 +128,12 @@ class AdminDoctorService
         }
         if (isset($data['password'])) {
             $userData['password'] = Hash::make($data['password']);
+        }
+        if ($request->hasFile('profile_image')) {
+            if ($doctor->user->profile_image) {
+                Storage::disk('public')->delete($doctor->user->profile_image);
+            }
+            $userData['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
         }
 
         if (!empty($userData)) {

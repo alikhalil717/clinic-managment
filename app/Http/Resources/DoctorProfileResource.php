@@ -17,6 +17,9 @@ class DoctorProfileResource extends JsonResource
         return [
             'user' => new UserProfileResource($this->user),
             'doctor_id' => $this->doctor_id,
+            'profile_image' => $this->user?->profile_image
+                ? asset('storage/' . $this->user->profile_image)
+                : null,
             'specialization' => $this->specialization,
             'license_number' => $this->license_number,
             'years_of_experience' => $this->years_of_experience,
@@ -36,8 +39,12 @@ class DoctorProfileResource extends JsonResource
                             'case_id' => $plan->case->case_id,
                             'title' => $plan->case->title,
                             'patient_age' => $plan->case->patient_age,
-                            'before_photo' => $plan->case->before_photo,
-                            'after_photo' => $plan->case->after_photo,
+                            'before_photo' => $plan->case->before_photo
+                                ? asset('storage/' . $plan->case->before_photo)
+                                : null,
+                            'after_photo' => $plan->case->after_photo
+                                ? asset('storage/' . $plan->case->after_photo)
+                                : null,
                             'case_duration' => $plan->case->case_duration,
                         ];
                     }

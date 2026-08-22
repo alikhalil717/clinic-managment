@@ -6,6 +6,8 @@ use App\Models\Admin;
 use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DoctorProfileNormalizationTest extends TestCase
@@ -124,6 +126,65 @@ class DoctorProfileNormalizationTest extends TestCase
         // Clearing an array behaves like the old nullable JSON column.
         $fresh->update(['education' => null]);
         $this->assertNull(Doctor::query()->find($doctor->doctor_id)->education);
+    }
+
+    public function test_store_doctor_persists_profile_image_and_returns_url(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAsAdmin()->post('/api/admin/doctors', [
+            'first_name' => 'Nour',
+            'last_name' => 'Sayed',
+            'email' => 'nour.sayed@example.com',
+            'phone' => '1234567891',
+            'password' => 'password123',
+            'specialization' => 'Orthodontics',
+            'years_of_experience' => 3,
+            'profile_image' => UploadedFile::fake()->create('avatar.png', 50, 'image/png'),
+        ]);
+
+        $response->assertCreated();
+
+        $url = $response->json('data.profile_image');
+        $this->assertNotNull($url);
+        $this->assertStringContainsString('/storage/profiles/', $url);
+
+        $storedPath = substr($url, strpos($url, '/storage/') + strlen('/storage/'));
+        Storage::disk('public')->assertExists($storedPath);
+
+        $user = User::query()->where('email', 'nour.sayed@example.com')->first();
+        $this->assertSame($storedPath, $user->profile_image);
+
+        $show = $this->actingAsAdmin()->getJson("/api/admin/doctors/{$user->user_id}");
+
+        $show
+            ->assertOk()
+            ->assertJsonPath('data.profile_image', $url);
+    }
+
+    public function test_update_doctor_replaces_profile_image_file(): void
+    {
+        Storage::fake('public');
+
+        $doctor = Doctor::factory()->create();
+        $oldPath = UploadedFile::fake()->create('old.png', 50, 'image/png')->store('profiles', 'public');
+        $doctor->user->update(['profile_image' => $oldPath]);
+
+        $response = $this->actingAsAdmin()->post("/api/admin/doctors/{$doctor->doctor_id}", [
+            '_method' => 'PUT',
+            'profile_image' => UploadedFile::fake()->create('new.jpg', 50, 'image/jpeg'),
+        ]);
+
+        $response->assertOk();
+
+        Storage::disk('public')->assertMissing($oldPath);
+
+        $freshUser = $doctor->refresh()->user;
+        Storage::disk('public')->assertExists($freshUser->profile_image);
+        $this->assertStringContainsString(
+            '/storage/' . $freshUser->profile_image,
+            $response->json('data.profile_image')
+        );
     }
 
     public function test_store_doctor_with_dashboard_payload_persists_normalized_tables(): void
