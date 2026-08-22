@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DoctorAuthController;
 use App\Http\Controllers\Api\DoctorProfileController;
 use App\Http\Controllers\Api\PatientAuthController;
 use App\Http\Controllers\Api\PatientDashboardController;
+use App\Http\Controllers\Api\PatientMedicalRecordController;
 use App\Http\Controllers\Api\SecretaryAuthController;
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\AdminDashboardController;
@@ -72,6 +73,8 @@ Route::prefix('patient')->group(function (): void {
     Route::get('/medical-history', [MedicalHistoryController::class, 'index'])
         ->middleware('patient.bearer:Patient');
     Route::put('/medical-history', [MedicalHistoryController::class, 'update'])
+        ->middleware('patient.bearer:Patient');
+    Route::get('/medical-record', [PatientMedicalRecordController::class, 'show'])
         ->middleware('patient.bearer:Patient');
     Route::get('/dental-chart', [DentalChartController::class, 'index'])
         ->middleware('patient.bearer:Patient');
