@@ -12,7 +12,9 @@ class SecretaryDoctorService
      */
     public function index(): JsonResponse
     {
-        $doctors = Doctor::with('user')
+        $doctors = Doctor::query()
+            ->with('user')
+            ->withProfileArrays()
             ->get()
             ->map(function ($doctor) {
                 return [

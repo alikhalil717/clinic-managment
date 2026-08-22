@@ -146,7 +146,9 @@ class PatientDashboardService
 
     private function getAllDoctorsData(): array
     {
-        return Doctor::with('user')
+        return Doctor::query()
+            ->with('user')
+            ->withProfileArrays()
             ->get()
             ->map(function ($doctor) {
                 return [

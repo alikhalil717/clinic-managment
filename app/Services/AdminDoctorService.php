@@ -18,7 +18,9 @@ class AdminDoctorService
      */
     public function index(): JsonResponse
     {
-        $doctors = Doctor::with('user')
+        $doctors = Doctor::query()
+            ->with('user')
+            ->withProfileArrays()
             ->get()
             ->map(function ($doctor) {
                 return [
@@ -67,9 +69,14 @@ class AdminDoctorService
             'specialization' => $data['specialization'],
             'license_number' => $data['license_number'] ?? null,
             'years_of_experience' => $data['years_of_experience'],
+            'about' => $data['about'] ?? null,
             'rating' => 0,
             'reviews_count' => 0,
+            'education' => $data['education'] ?? null,
+            'certifications' => $data['certifications'] ?? null,
+            'expertise' => $data['expertise'] ?? null,
             'working_days' => $data['working_days'] ?? null,
+            'working_hours' => $data['working_hours'] ?? null,
         ]);
 
         return response()->json([
@@ -145,6 +152,9 @@ class AdminDoctorService
         }
         if (isset($data['working_days'])) {
             $doctorData['working_days'] = $data['working_days'];
+        }
+        if (isset($data['working_hours'])) {
+            $doctorData['working_hours'] = $data['working_hours'];
         }
 
         if (!empty($doctorData)) {

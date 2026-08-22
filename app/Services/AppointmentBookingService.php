@@ -94,7 +94,7 @@ class AppointmentBookingService
     public function createNormal(array $data): JsonResponse
     {
         $patient = Patient::with('user')->findOrFail($data['patient_id']);
-        $doctor = Doctor::with('user')->findOrFail($data['doctor_id']);
+        $doctor = Doctor::with(['user', 'workingDays', 'workingHours'])->findOrFail($data['doctor_id']);
 
         $planId = $data['treatment_plan_id'] ?? null;
         $stageId = $data['treatment_stage_id'] ?? null;

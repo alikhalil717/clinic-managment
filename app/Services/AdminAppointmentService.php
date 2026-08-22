@@ -9,7 +9,7 @@ class AdminAppointmentService
 {
     public function index(): JsonResponse
     {
-        $appointments = Appointment::with(['doctor.user', 'patient.user'])
+        $appointments = Appointment::with(['doctor.user', 'doctor.workingDays', 'patient.user'])
             ->orderBy('date', 'desc')
             ->orderBy('start_time', 'desc')
             ->get()

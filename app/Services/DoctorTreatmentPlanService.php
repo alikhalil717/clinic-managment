@@ -116,7 +116,7 @@ class DoctorTreatmentPlanService
 
         $plan = TreatmentPlan::query()
             ->where('doctor_id', $doctor->doctor_id)
-            ->with(['patient.user', 'case', 'stages.appointments.doctor.user', 'dentalChart.teeth.tooth'])
+            ->with(['patient.user', 'doctor.workingDays', 'case', 'stages.appointments.doctor.user', 'dentalChart.teeth.tooth'])
             ->findOrFail($planId);
 
         return response()->json([

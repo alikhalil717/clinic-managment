@@ -16,7 +16,7 @@ class PatientTreatmentPlanService
     {
         $plans = TreatmentPlan::query()
             ->where('patient_id', $user->user_id)
-            ->with(['doctor.user', 'case'])
+            ->with(['doctor.user', 'doctor.workingDays', 'case'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($plan) => $this->summary($plan));
@@ -34,7 +34,7 @@ class PatientTreatmentPlanService
     {
         $plan = TreatmentPlan::query()
             ->where('patient_id', $user->user_id)
-            ->with(['doctor.user', 'case', 'stages.appointments.doctor.user', 'dentalChart.teeth.tooth'])
+            ->with(['doctor.user', 'doctor.workingDays', 'case', 'stages.appointments.doctor.user', 'dentalChart.teeth.tooth'])
             ->findOrFail($planId);
 
         return response()->json([

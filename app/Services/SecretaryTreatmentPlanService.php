@@ -12,7 +12,7 @@ class SecretaryTreatmentPlanService
      */
     public function index(): JsonResponse
     {
-        $plans = TreatmentPlan::with(['patient.user', 'doctor.user', 'case'])
+        $plans = TreatmentPlan::with(['patient.user', 'doctor.user', 'doctor.workingDays', 'case'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($plan) {

@@ -47,7 +47,11 @@ class DoctorAuthService
         }
 
         if (!empty($doctorData)) {
-            Doctor::query()->where('doctor_id', $user->user_id)->update($doctorData);
+            $doctor = Doctor::query()->find($user->user_id);
+
+            if ($doctor) {
+                $doctor->update($doctorData);
+            }
         }
 
         $user->update($data);

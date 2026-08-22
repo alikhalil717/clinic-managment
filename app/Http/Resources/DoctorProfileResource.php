@@ -27,7 +27,7 @@ class DoctorProfileResource extends JsonResource
             'certifications' => $this->certifications,
             'expertise' => $this->expertise,
             'working_days' => $this->working_days,
-            'working_days' => $this->working_days,
+            'working_hours' => $this->working_hours,
             'cases' => $this->whenLoaded('treatmentPlans', function () {
                 return $this->treatmentPlans->map(function ($plan) {
                     $caseData = null;

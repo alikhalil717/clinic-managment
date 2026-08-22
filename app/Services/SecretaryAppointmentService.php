@@ -36,7 +36,7 @@ class SecretaryAppointmentService
     ];
     public function index(): JsonResponse
     {
-        $appointments = Appointment::with(['doctor.user', 'patient.user'])
+        $appointments = Appointment::with(['doctor.user', 'doctor.workingDays', 'patient.user'])
             ->orderBy('date', 'desc')
             ->orderBy('start_time', 'desc')
             ->get()
@@ -72,7 +72,7 @@ class SecretaryAppointmentService
      */
     public function show(int $appointmentId): JsonResponse
     {
-        $appointment = Appointment::with(['doctor.user', 'patient.user', 'treatmentSessions.payments'])
+        $appointment = Appointment::with(['doctor.user', 'doctor.workingDays', 'patient.user', 'treatmentSessions.payments'])
             ->findOrFail($appointmentId);
 
         $isCompleted = in_array(strtolower($appointment->status ?? ''), ['finished', 'completed']);

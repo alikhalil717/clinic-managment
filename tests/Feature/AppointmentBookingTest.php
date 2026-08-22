@@ -16,12 +16,19 @@ class AppointmentBookingTest extends TestCase
 
     private Patient $patient;
     private Doctor $doctor;
+    private string $saturdayDate;
+    private string $sundayDate;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->patient = Patient::factory()->create();
+
+        // Next Saturday that is still in the future (validation requires today or later)
+        $saturday = Carbon::today()->next(Carbon::SATURDAY);
+        $this->saturdayDate = $saturday->toDateString();
+        $this->sundayDate = $saturday->copy()->addDay()->toDateString();
 
         // Doctor who works Saturday 10:00–15:00
         $doctorUser = User::factory()->create(['role' => 'doctor']);
@@ -40,7 +47,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '10:00:00',
             'end_time' => '10:30:00',
             'status' => 'confirmed',
@@ -50,7 +57,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '11:30:00',
             'end_time' => '12:00:00',
             'status' => 'confirmed',
@@ -66,9 +73,9 @@ class AppointmentBookingTest extends TestCase
             ->assertJsonStructure(['availability' => [['date', 'busy_slots']]])
             ->assertJsonCount(31, 'availability');
 
-        // Find the entry for 2026-08-08
+        // Find the entry for the booked Saturday
         $entry = collect($response->json('availability'))
-            ->firstWhere('date', '2026-08-08');
+            ->firstWhere('date', $this->saturdayDate);
 
         $this->assertSame(['10:00', '11:30'], $entry['busy_slots']);
     }
@@ -78,7 +85,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '10:00:00',
             'end_time' => '10:30:00',
             'status' => 'confirmed',
@@ -86,7 +93,7 @@ class AppointmentBookingTest extends TestCase
             'notes' => 'busy test',
         ]);
 
-        $response = $this->getJson("/api/doctors/{$this->doctor->doctor_id}/busy?date=2026-08-08");
+        $response = $this->getJson("/api/doctors/{$this->doctor->doctor_id}/busy?date={$this->saturdayDate}");
 
         $response
             ->assertOk()
@@ -98,7 +105,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => null,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '09:00:00',
             'end_time' => '09:30:00',
             'status' => 'confirmed',
@@ -106,7 +113,7 @@ class AppointmentBookingTest extends TestCase
             'notes' => 'busy test',
         ]);
 
-        $response = $this->getJson('/api/appointments/diagnostic/busy?date=2026-08-08');
+        $response = $this->getJson("/api/appointments/diagnostic/busy?date={$this->saturdayDate}");
 
         $response
             ->assertOk()
@@ -119,7 +126,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '09:30:00',
             'end_time' => '10:30:00',
             'status' => 'confirmed',
@@ -127,7 +134,7 @@ class AppointmentBookingTest extends TestCase
             'notes' => 'long appointment',
         ]);
 
-        $response = $this->getJson("/api/doctors/{$this->doctor->doctor_id}/busy?date=2026-08-08");
+        $response = $this->getJson("/api/doctors/{$this->doctor->doctor_id}/busy?date={$this->saturdayDate}");
 
         $response
             ->assertOk()
@@ -140,7 +147,7 @@ class AppointmentBookingTest extends TestCase
         Appointment::create([
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'start_time' => '09:30:00',
             'end_time' => '10:30:00',
             'status' => 'confirmed',
@@ -151,7 +158,7 @@ class AppointmentBookingTest extends TestCase
         $response = $this->postJson('/api/appointments/normal', [
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08',
+            'date' => $this->saturdayDate,
             'time' => '10:00', // overlaps the existing 09:30–10:30 appointment
         ]);
 
@@ -162,14 +169,14 @@ class AppointmentBookingTest extends TestCase
     {
         $response = $this->postJson('/api/appointments/diagnostic', [
             'patient_id' => $this->patient->patient_id,
-            'date' => '2026-08-10', // Monday
+            'date' => $this->saturdayDate,
             'time' => '10:00',
         ]);
 
         $response
             ->assertCreated()
             ->assertJsonPath('appointment_type', 'diagnostic')
-            ->assertJsonPath('date', '2026-08-10')
+            ->assertJsonPath('date', $this->saturdayDate)
             ->assertJsonPath('time', '10:00')
             ->assertJsonPath('message', "We'll send you a reminder.");
     }
@@ -178,13 +185,13 @@ class AppointmentBookingTest extends TestCase
     {
         $this->postJson('/api/appointments/diagnostic', [
             'patient_id' => $this->patient->patient_id,
-            'date' => '2026-08-10',
+            'date' => $this->saturdayDate,
             'time' => '10:00',
         ])->assertCreated();
 
         $response = $this->postJson('/api/appointments/diagnostic', [
             'patient_id' => $this->patient->patient_id,
-            'date' => '2026-08-10',
+            'date' => $this->saturdayDate,
             'time' => '10:00',
         ]);
 
@@ -195,7 +202,7 @@ class AppointmentBookingTest extends TestCase
     {
         $response = $this->postJson('/api/appointments/diagnostic', [
             'patient_id' => $this->patient->patient_id,
-            'date' => '2026-08-10',
+            'date' => $this->saturdayDate,
             'time' => '17:00',
         ]);
 
@@ -204,10 +211,22 @@ class AppointmentBookingTest extends TestCase
 
     public function test_create_normal_appointment(): void
     {
+        // Standalone bookings require a prior diagnostic appointment.
+        Appointment::create([
+            'patient_id' => $this->patient->patient_id,
+            'doctor_id' => null,
+            'date' => $this->saturdayDate,
+            'start_time' => '09:00:00',
+            'end_time' => '09:30:00',
+            'status' => 'confirmed',
+            'appointment_type' => 'diagnostic',
+            'notes' => 'prior diagnostic',
+        ]);
+
         $response = $this->postJson('/api/appointments/normal', [
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08', // Saturday
+            'date' => $this->saturdayDate, // Saturday
             'time' => '10:00',
         ]);
 
@@ -222,7 +241,7 @@ class AppointmentBookingTest extends TestCase
         $response = $this->postJson('/api/appointments/normal', [
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-09', // Sunday - doctor doesn't work
+            'date' => $this->sundayDate, // Sunday - doctor doesn't work
             'time' => '10:00',
         ]);
 
@@ -234,7 +253,7 @@ class AppointmentBookingTest extends TestCase
         $response = $this->postJson('/api/appointments/normal', [
             'patient_id' => $this->patient->patient_id,
             'doctor_id' => $this->doctor->doctor_id,
-            'date' => '2026-08-08', // Saturday 10:00-15:00
+            'date' => $this->saturdayDate, // Saturday 10:00-15:00
             'time' => '18:00',
         ]);
 
